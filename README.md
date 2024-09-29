@@ -5,10 +5,10 @@ Neptune (_also known as N/OS_) is a small operating system made in Assembly and 
 ## Building N/OS
 
 There are multiple steps in order to build N/OS.
-	1. [Dependencies](#dependencies)
-	2. [Bootloader](#bootloader)
-	3. [Kernel](#kernel)
-	4. [Boot Media Generation](#media-gen)
+1. [Dependencies](#dependencies)
+2. [Bootloader](#bootloader)
+3. [Kernel](#kernel)
+4. [Boot Media Generation](#media-gen)
 
 ---
 
