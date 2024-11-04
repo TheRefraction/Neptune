@@ -1,10 +1,14 @@
 #!/bin/bash
-export SRC_DIR=$PWD
 echo "Building GCC Cross-compiler"
 read -p "Press [ENTER] to start..."
 source ./set_var.sh
+export OLD=$PWD
 
-cd $SRC_DIR/opt
+if [ ! -d "$PREFIX" ]; then
+	mkdir $PREFIX
+fi
+
+cd $PREFIX
 if [ ! -d "binutils-$BINUTILS_VERSION" ]; then
 	echo "Downloading Binutils"
 	curl https://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.gz | tar -xzf -
@@ -23,8 +27,8 @@ echo "Building & Installing Binutils"
 make
 make install
 
-read -p "Press any key to continue..."
-cd $SRC_DIR/opt
+read -p "Press [ENTER] to continue..."
+cd $PREFIX
 if [ ! -d "gdb-$GDB_VERSION" ]; then
 	echo "Downloading GDB"
 	curl https://ftp.gnu.org/gnu/gdb/gdb-$GDB_VERSION.tar.gz | tar -xzf - 
@@ -43,8 +47,8 @@ echo "Building & Installing GDB"
 make all-gdb
 make install-gdb
 
-read -p "Press any key to continue..."
-cd $SRC_DIR/opt
+read -p "Press [ENTER] to continue..."
+cd $PREFIX
 if [ ! -d "gcc-$GCC_VERSION" ]; then
 	echo "Downloading GCC"
 	curl https://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz | tar -xzf - 
@@ -68,5 +72,5 @@ make all-target-libgcc
 make install-gcc
 make install-target-libgcc
 
-cd $SRC_DIR
+cd $OLD
 echo "Done!"

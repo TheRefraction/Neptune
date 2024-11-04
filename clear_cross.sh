@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -rf opt/cross
+rm -rf /opt/cross

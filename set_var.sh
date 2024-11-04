@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Setting environment variable for current shell session"
-export PREFIX="$HOME/src/opt/cross"
+export PREFIX="/opt/cross"
 export TARGET=i686-elf
 export PATH="$PREFIX/bin:$PATH"
 export GCC_VERSION=13.2.0
