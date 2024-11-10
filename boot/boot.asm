@@ -29,10 +29,10 @@ switch_to_pm:
 
 	jmp CODE_SEG:init_protected_mode ; Far jump
 
-%include "boot/include/print_string.asm"
-%include "boot/include/print_string_pm.asm"
-%include "boot/include/gdt.asm"
-%include "boot/include/disk_read.asm"
+%include "include/print_string.asm"
+%include "include/print_string_pm.asm"
+%include "include/gdt.asm"
+%include "include/disk_read.asm"
 
 [bits 16]
 
