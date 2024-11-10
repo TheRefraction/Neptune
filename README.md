@@ -33,8 +33,12 @@ NOTE: All required dependencies can be installed by running the following shell 
 - On Debian distributions ```sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev nasm git```
 - On Arch ```pacman Syu base-devel gmp libmpc mpfr nasm git```
 
-NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges. Moreover building it usually takes around 40 minutes.
+NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. 
+<br>
+You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges. Moreover building it usually takes **around 40 minutes**.
+<br>
 Default ```TARGET```is set to ```i686-elf```. 
+<br>
 Versions can be changed through the Makefile. Recommended versions are:
 - GCC 13.2.0
 - GDB 14.2
@@ -56,14 +60,17 @@ TODO
 
 ### Boot Media Generation <a name="media-gen"></a>
 
-As of now it is possible to generate a floppy disk image (.img) using the following command ```make floppy```. By default the ```make``` command will compile and generate a floppy disk image. 
+As of now it is possible to generate a floppy disk image (.img) using the following command ```make floppy```. 
+<br>
+By default the ```make``` command will compile and generate a floppy disk image. 
 This can be changed by setting the ```OBJ``` variable to the chosen medium if it exists.
 
 ---
 
 ## Running N/OS
 
-The generated disk image can be open with either Bochs or QEMU. For debugging purposes, Bochs is recommended. Please keep in mind that you may have to install ```bochs-x``` in order to display the window and debugging GUI. Configuration files and BIOS images are saved onto the bochs folder.
+The generated disk image can be opened with either Bochs or QEMU. For debugging purposes, Bochs is recommended. You may have to install ```bochs-x``` in order to display the window and debugging GUI. Configuration files and BIOS images are saved onto the bochs folder.
+<br>
 Run the following command ```make run```.
 
 ---
