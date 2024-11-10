@@ -31,15 +31,14 @@ Download and install the following dependencies if you don't have them already.
 
 NOTE: All required dependencies can be installed by running the following shell command:
 - On Debian distributions ```sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev nasm git```
-- On Arch ````pacman Syu base-devel gmp libmpc mpfr nasm git```
+- On Arch ```pacman Syu base-devel gmp libmpc mpfr nasm git```
 
-NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges.
-Default ```TARGET````is set to ```i686-elf```. 
+NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges. Moreover building it usually takes around 40 minutes.
+Default ```TARGET```is set to ```i686-elf```. 
 Versions can be changed through the Makefile. Recommended versions are:
 - GCC 13.2.0
 - GDB 14.2
 - Binutils 2.42
-
 
 ---
 
