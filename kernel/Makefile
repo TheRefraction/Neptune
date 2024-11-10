@@ -1,12 +1,14 @@
 OBJ=kernel
-CC=$(PREFIX)/$(TARGET)-gcc -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+CC=$(PREFIX)/bin/$(TARGET)-gcc -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
 all: $(OBJ)
 
 kernel: kernel_entry.o kernel.o 
-	$(PREFIX)/$(TARGET)-ld --oformat binary -Ttext 1000 $^ -o $@.bin
+	@echo "Building N/OS Kernel"
+	$(PREFIX)/bin/$(TARGET)-ld --oformat binary -Ttext 1000 $^ -o $@.bin
 
 kernel_entry.o: kernel_entry.s
+	@echo "Building Kernel Entry Point"
 	nasm -f elf $^ -o $@
 
 .o: .c

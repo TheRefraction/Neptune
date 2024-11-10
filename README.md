@@ -16,23 +16,30 @@ There are multiple steps in order to build N/OS.
 
 Download and install the following dependencies if you don't have them already.
 
-- A 32-bit GCC Cross Compiler (_i686_elf_) 
-	- build-essential
-	- bison
-	- flex
-	- libgmp3-dev
-	- libmpc-dev
-	- libmpfr-dev
-	- texinfo
-	- libisl-dev
+- A 32-bit GCC Cross Compiler (_i686-elf_) 
+	- Compiler
+    - Make
+	- [Bison](https://www.gnu.org/software/bison)
+	- [Flex](https://github.com/westes/flex)
+	- [GMP](https://gmplib.org)
+	- MPC
+	- [MPFR](https://www.mpfr.org)
+	- [Texinfo](https://www.gnu.org/software/texinfo)
+	- ISL
 - [Netwide Assembler (nasm)](https://www.nasm.us)
 - [Git](https://git-scm.com/downloads)
 
-NOTE: The GCC Cross Compiler can be built using the bash script (*Unix only*) ```./build_cross.sh```. Recommended versions are:
+NOTE: All required dependencies can be installed by running the following shell command:
+- On Debian distributions ```sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev nasm git```
+- On Arch ````pacman Syu base-devel gmp libmpc mpfr nasm git```
+
+NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges.
+Default ```TARGET````is set to ```i686-elf```. 
+Versions can be changed through the Makefile. Recommended versions are:
 - GCC 13.2.0
 - GDB 14.2
 - Binutils 2.42
-If you decide to compile your cross compiler by yourself, change the ```$PREFIX``` to your chosen directory.
+
 
 ---
 
@@ -50,13 +57,15 @@ TODO
 
 ### Boot Media Generation <a name="media-gen"></a>
 
-TODO
+As of now it is possible to generate a floppy disk image (.img) using the following command ```make floppy```. By default the ```make``` command will compile and generate a floppy disk image. 
+This can be changed by setting the ```OBJ``` variable to the chosen medium if it exists.
 
 ---
 
 ## Running N/OS
 
-TODO
+The generated disk image can be open with either Bochs or QEMU. For debugging purposes, Bochs is recommended. Please keep in mind that you may have to install ```bochs-x``` in order to display the window and debugging GUI. Configuration files and BIOS images are saved onto the bochs folder.
+Run the following command ```make run```.
 
 ---
 

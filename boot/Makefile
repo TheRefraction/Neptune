@@ -3,7 +3,8 @@ OBJ=boot
 all: $(OBJ)
 
 boot: boot.asm
-	nasm -f bin $^ -o $@.bin ;
+	@echo "Building N/OS Bootloader"
+	nasm -f bin $^ -o $@.bin
 
 clean:
 	rm -f *.bin

@@ -1,5 +1,4 @@
-bin/
 log.txt
-floppyA
+*.img
 *.o
 *.bin
