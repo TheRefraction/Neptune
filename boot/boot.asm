@@ -1,78 +1,51 @@
-[org 0x7c00]
+%define BASE 0x100
 
-KERNEL_OFFSET equ 0x1000
+[BITS 16]
+[ORG 0x0]
 
-; Code starts here
-mov [BOOT_DRIVE], dl
+jmp start
 
-; Initialize the stack 
-mov bp, 0x9000
-mov sp, bp
-
-mov bx, MSG_REAL_MODE
-call print_string
-
-call load_kernel
-
-call switch_to_pm
-
-jmp $ ; Halt forever
-
-switch_to_pm:
-	cli ; Disable BIOS interrupts
-	lgdt [gdt_descriptor] ; Load new GDT to the CPU
-
-	; Update first bit of cr0 register ==> Informs the CPU we're switching to PM 
-	mov eax, cr0
-	or eax, 1
-	mov cr0, eax 
-
-	jmp CODE_SEG:init_protected_mode ; Far jump
-
-%include "include/print_string.asm"
-%include "include/print_string_pm.asm"
-%include "include/gdt.asm"
-%include "include/disk_read.asm"
-
-[bits 16]
-
-load_kernel:
-	mov bx, MSG_LOAD_KERNEL
-	call print_string
-
-	mov bx, KERNEL_OFFSET
-	mov dh, 15
-	mov dl, [BOOT_DRIVE]
-	call disk_load
-
-	ret
-
-[bits 32]
-
-init_protected_mode:
-	mov ax, DATA_SEG
+start:
+	; Initialize segments
+	mov ax, 0x07c0
 	mov ds, ax
 	mov es, ax
-	mov fs, ax
-	mov gs, ax
+
+	; Initialize stack
+	mov ax, 0x8000
 	mov ss, ax
+	mov sp, 0xf000
 
-	; Initialize new stack
-	mov ebp, 0x90000
-	mov esp, ebp
+	mov [BOOT_DRIVE], dl
 
-start_protected_mode:
-	mov ebx, MSG_PROT_MODE
-	call print_string_pm
+	;mov si, MSG_REAL_MODE
+	;call print_string
 
-	call KERNEL_OFFSET ; Jump to Kernel entry point
+	; Load the larger part of the bootloader (stage 2)
+	xor ax, ax
+	int 0x13
 
-	jmp $ ; Halt forever
+	push es
+	mov ax, BASE
+	mov es, ax
+	mov bx, 0
 
-BOOT_DRIVE db 0
-MSG_REAL_MODE db "Started N/OS in 16-bit Real Mode.", 13, 10, 0
-MSG_PROT_MODE db "Successfully landed in 32-bit Protected Mode!", 0
-MSG_LOAD_KERNEL db "Loading N/OS Kernel into memory.", 13, 10, 0
+	mov ah, 2
+	mov al, 2 ; Stage 2 is 2 sectors (1024 bytes)
+	mov ch, 0
+	mov cl, 2
+	mov dh, 0
+	mov dl, [BOOT_DRIVE]
+	int 0x13
 
-times 510 - ($-$$) db 144 ; Fills first sector with NOP opcode until we have 512KB
-dw 0xAA55 ; BIOS Sector boot magic word
+	pop es
+
+	; Jump to stage 2
+	jmp dword BASE:0
+
+
+BOOT_DRIVE: db 0
+MSG_REAL_MODE: db "Started in 16-bit Real Mode", 13, 10, 0
+
+times 510 - ($ - $$) db 144 ; Fill rest of sector with NOP
+dw 0xAA55 ; BIOS boot sector signature

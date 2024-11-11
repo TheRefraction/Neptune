@@ -5,7 +5,7 @@ all: $(OBJ)
 
 kernel: kernel_entry.o kernel.o tty.o 
 	@echo "Building N/OS Kernel"
-	$(PREFIX)/bin/$(TARGET)-ld --oformat binary -Ttext 1000 $^ -o $@.bin
+	$(PREFIX)/bin/$(TARGET)-ld --oformat binary -Ttext 2000 $^ -o $@.bin
 
 kernel_entry.o: kernel_entry.s
 	@echo "Building Kernel Entry Point"

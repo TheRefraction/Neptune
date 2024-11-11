@@ -1,9 +1,10 @@
-OBJ=boot
-
-all: $(OBJ)
+all: boot loader
+	cat boot.bin loader.bin > bootloader.bin
 
 boot: boot.asm
-	@echo "Building N/OS Bootloader"
+	nasm -f bin $^ -o $@.bin
+
+loader: loader.asm
 	nasm -f bin $^ -o $@.bin
 
 clean:
