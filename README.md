@@ -31,7 +31,7 @@ Download and install the following dependencies if you don't have them already.
 
 NOTE: All required dependencies can be installed by running the following shell command:
 - On Debian distributions ```sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev nasm git```
-- On Arch ```pacman -Syu base-devel gmp libmpc mpfr nasm git```
+- On Arch ```sudo pacman -Syu base-devel gmp libmpc mpfr nasm git```
 
 NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. 
 <br>
