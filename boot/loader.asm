@@ -1,11 +1,10 @@
-%define KERNEL_OFFSET 0x2000
-
 [BITS 16]
 [ORG 0x0]
 
 jmp start
 
 %include "util.inc"
+%include "cons.inc"
 
 start:
 	mov ax, 0x100
@@ -43,15 +42,15 @@ load_kernel:
 	mov bx, KERNEL_OFFSET
 
 	mov ah, 0x02
-	mov al, 15
+	mov al, KERNEL_SIZE
 	mov ch, 0
-	mov cl, 4	
+	mov cl, 2 + LOADER_SIZE
 	mov dh, 0
 	mov dl, [BOOT_DRIVE]
 	int 0x13	
 	jc .load_error
 
-	cmp al, 15 ; Did we read enough sectors?
+	cmp al, KERNEL_SIZE ; Did we read enough sectors?
 	jne .load_error
 
 	pop es
@@ -119,7 +118,7 @@ protected_mode:
 
 BOOT_DRIVE: db 0
 MSG_PROT_MODE: db "Entered 32-bit Protected Mode!", 0
-MSG_A20_ERROR: db "A20 error.", 13, 10, 0
+MSG_A20_ERROR: db "Error! A20 Line could not be enabled", 13, 10, 0
 MSG_LOADER: db "Entered Stage 2.", 13, 10, 0
 MSG_LOAD_KERNEL: db "Loading Kernel into memory.", 13, 10, 0
 MSG_LOAD_GDT: db "Loading GDT", 13, 10, 0
@@ -133,4 +132,4 @@ gdt_end:
 gdt_descriptor: dw 0
 		dd 0
 
-times 1024 - ($-$$) db 144
+times LOADER_SIZE * 512 - ($-$$) db 144

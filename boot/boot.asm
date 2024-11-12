@@ -1,9 +1,9 @@
-%define BASE 0x100
-
 [BITS 16]
 [ORG 0x0]
 
 jmp start
+
+%include "cons.inc"
 
 start:
 	; Initialize segments
@@ -18,20 +18,20 @@ start:
 
 	mov [BOOT_DRIVE], dl
 
-	;mov si, MSG_REAL_MODE
-	;call print_string
+	mov si, MSG_REAL_MODE
+	call print_string
 
 	; Load the larger part of the bootloader (stage 2)
 	xor ax, ax
 	int 0x13
 
 	push es
-	mov ax, BASE
+	mov ax, LOADER_BASE
 	mov es, ax
 	mov bx, 0
 
 	mov ah, 2
-	mov al, 2 ; Stage 2 is 2 sectors (1024 bytes)
+	mov al, LOADER_SIZE ; Stage 2 is 2 sectors (1024 bytes)
 	mov ch, 0
 	mov cl, 2
 	mov dh, 0
@@ -41,8 +41,24 @@ start:
 	pop es
 
 	; Jump to stage 2
-	jmp dword BASE:0
+	jmp dword LOADER_BASE:0
 
+print_string:
+	push ax
+	push bx
+.main:
+	lodsb
+	cmp al, 0
+	jz .end
+
+	mov ah, 0x0e
+	mov bx, 0x07
+	int 0x10
+	jmp .main
+.end:
+	pop bx
+	pop ax
+	ret
 
 BOOT_DRIVE: db 0
 MSG_REAL_MODE: db "Started in 16-bit Real Mode", 13, 10, 0
