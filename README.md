@@ -81,5 +81,6 @@ Run the following command ```make run```.
 	- boot: Bootloader source code
 	- doc: Documentation
 	- kernel: Kernel source code
+ 	- lib: Standard c library code
 
 ---
