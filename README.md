@@ -33,7 +33,7 @@ NOTE: All required dependencies can be installed by running the following shell 
 - On Debian distributions ```sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev nasm git```
 - On Arch ```sudo pacman -Syu base-devel gmp libmpc mpfr nasm git```
 
-NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make build_cross```. 
+NOTE: The GCC Cross Compiler can be built using the main Makefile (*Unix only*) ```make cross_build```. 
 <br>
 You may choose where the cross compiler resides by changing the ```PREFIX``` variable. Please keep in mind that depending on what you set ```PREFIX``` to, you may need to run the Makefile with root privileges. Moreover building it usually takes **around 40 minutes**.
 <br>
