@@ -2,6 +2,11 @@
 #include "io.h"
 #include "tty.h"
 
+
+// macro for code lisibility
+#define SCREEN_CTRL 0x3D4
+#define SCREEN_DATA 0x3D5
+
 // TODO: Move these variables inside tty.h
 static const int VGA_WIDTH = 80;
 static const int VGA_HEIGHT = 25;
@@ -14,36 +19,36 @@ static uint8_t terminal_color;
 static uint16_t* terminal_buffer;
 
 void enable_cursor(uint8_t start, uint8_t end) {
-	outb(0x3D4, 0x0A);
-	outb(0x3D5, (inb(0x3D5) & 0xC0) | start);
+	outb(SCREEN_CTRL, 0x0A);
+	outb(SCREEN_DATA, (inb(SCREEN_DATA) & 0xC0) | start);
 
-	outb(0x3D4, 0x0B);
-	outb(0x3D5, (inb(0x3D5) & 0xE0) | end);
+	outb(SCREEN_CTRL, 0x0B);
+	outb(SCREEN_DATA, (inb(SCREEN_DATA) & 0xE0) | end);
 }
 
 void disable_cursor() {
-	outb(0x3D4, 0x0A);
-	outb(0x3D5, 0x20);
+	outb(SCREEN_CTRL, 0x0A);
+	outb(SCREEN_DATA, 0x20);
 }
 
 void update_cursor(uint16_t x, uint16_t y) {
 	uint16_t pos = y * VGA_WIDTH + x;
 
-	outb(0x3D4, 0x0F);
-	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(SCREEN_CTRL, 0x0F);
+	outb(SCREEN_DATA, (uint8_t) (pos & 0xFF));
 
-	outb(0x3D4, 0x0E);
-	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+	outb(SCREEN_CTRL, 0x0E);
+	outb(SCREEN_DATA, (uint8_t) ((pos >> 8) & 0xFF));
 }
 
 uint16_t getpos_cursor(void) {
 	uint16_t pos = 0;
 
-	outb(0x3D4, 0x0F);
-	pos |= inb(0x3D5);
+	outb(SCREEN_CTRL, 0x0F);
+	pos |= inb(SCREEN_DATA);
 
-	outb(0x3D4, 0x0E);
-	pos |= ((uint16_t) inb(0x3D5)) << 8;
+	outb(SCREEN_CTRL, 0x0E);
+	pos |= ((uint16_t) inb(SCREEN_DATA)) << 8;
 
 	return pos;
 }
