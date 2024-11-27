@@ -29,7 +29,7 @@ keyboard: type=mf, serial_delay=250, paste_delay=100000, keymap=
 mouse: enabled=0, type=ps2, toggle=ctrl+mbutton
 parport1: enabled=1, file=""
 parport2: enabled=0
-com1: enabled=1, mode=null, dev=""
+com1: enabled=1, mode=file, dev=com1.out
 com2: enabled=0
 com3: enabled=0
 com4: enabled=0
