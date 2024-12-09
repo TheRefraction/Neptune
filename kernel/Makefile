@@ -3,7 +3,7 @@ CC=$(PREFIX)/bin/$(TARGET)-gcc -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
 all: $(OBJ)
 
-kernel: kernel_entry.o kernel.o tty.o 
+kernel: kernel_entry.o kernel.o tty.o libk.o gdt.o 
 	@echo "Building N/OS Kernel"
 	$(PREFIX)/bin/$(TARGET)-ld --oformat binary -Ttext 2000 $^ -o $@.bin
 

@@ -1,6 +1,7 @@
 #ifndef __KERNEL_TTY__
 #define __KERNEL_TTY__
 
+// TODO: Use types.h instead and replace current types
 #include <stddef.h>
 #include <stdint.h>
 
