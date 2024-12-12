@@ -1,7 +1,7 @@
 #ifndef __KERNEL_VGA__
 #define __KERNEL_VGA__
 
-#include <stdint.h>
+#include "types.h"
 
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
@@ -22,12 +22,12 @@ enum vga_color {
 	VGA_COLOR_WHITE = 15
 };
 
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
-	return (uint8_t) (fg | bg << 4);
+static inline u8 vga_entry_color(enum vga_color fg, enum vga_color bg) {
+	return (u8) (fg | bg << 4);
 }
 
-static inline uint16_t vga_entry(unsigned char c, uint8_t color) {
-	return (uint16_t) c | (uint16_t) color << 8;
+static inline u16 vga_entry(u8 c, u8 color) {
+	return (u16) c | (u16) color << 8;
 }
 
 #endif

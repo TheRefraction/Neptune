@@ -1,29 +1,5 @@
 #include "io.h"
-
-
-// configuration des ports ES (séries) COM1,COM2,COM3,COM4
-
-#define COM1_BASE 0x3F8 // les addresses des autres ports sont justes offset de 2,3,4,5
-
-#define DATA_PORT(base) (base)
-#define FIFO_CMD_PORT(base) (base+2)
-#define LINE_CMD_PORT(base) (base+3)
-#define MODEM_CMD_PORT(base) (base+4)
-#define LINE_STAT_PORT(base) (base+5)
-
-/* LINE_DLAB:
- * Dit au port série d'attendre en premier les 8 bits les plus élevés sur le port de données,
- * puis les 8 bits inférieurs suivront
- */
-#define LINE_DLAB 0x80
-
-
-// Définir les niveaux de gravité
-typedef enum {
-    LOG_LEVEL_DEBUG,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_ERROR
-} log_level_t;
+#include "com.h"
 
 // Définir les préfixes pour les niveaux
 const char* LOG_LEVEL_PREFIXES[] = {
@@ -32,7 +8,7 @@ const char* LOG_LEVEL_PREFIXES[] = {
     "[ERROR] "
 };
 
-void line_config_baud_rate(unsigned short com, unsigned short divisor) {
+void line_config_baud_rate(u16 com, u16 divisor) {
     outb(LINE_CMD_PORT(com), LINE_DLAB);
     outb(DATA_PORT(com), (divisor >> 8) & 0x00FF); // ET logique pour eliminer les hauts bits
     outb(DATA_PORT(com), divisor & 0x00FF);
@@ -48,7 +24,7 @@ void line_config_baud_rate(unsigned short com, unsigned short divisor) {
  * s le nombre de bits d'arret (ici 1, 0 correspondant à 1 bit)
  * dl la longueur (ici 8 bits)
  */
-void serial_line_config(unsigned short com)
+void serial_line_config(u16 com)
 {
     outb(LINE_CMD_PORT(com), 0x03);
 }
@@ -60,22 +36,20 @@ void serial_line_config(unsigned short com)
  *  utilise une taille de file de 14 octets.
  */
 
-void serial_fifo_config(unsigned short com) {
+void serial_fifo_config(u16 com) {
     outb(FIFO_CMD_PORT(com), 0xc7);
 }
 
-void serial_modem_config(unsigned short com) {
+void serial_modem_config(u16 com) {
     outb(MODEM_CMD_PORT(com), 0x03);
 }
 
-int serial_is_trans_fifo_empty(unsigned int com)
-{
+int serial_is_trans_fifo_empty(u32 com) {
     /* 0x20 = 0010 0000 */
     return inb(LINE_STAT_PORT(com)) & 0x20;
 }
 
-void serial_putchar(unsigned int com, char c) {
-    
+void serial_putchar(u32 com, char c) {
     // attendre que le port soit pret
     while (!serial_is_trans_fifo_empty(com));
 
@@ -86,13 +60,13 @@ void serial_write(log_level_t level,const char* data) {
 
     const char* prefix = LOG_LEVEL_PREFIXES[level];
 
-    unsigned int i = 0;
+    u32 i = 0;
     while(prefix[i]!= '\0') {
         serial_putchar(COM1_BASE, prefix[i]);
         i++;
     }
 
-    unsigned int j = 0;
+    u32 j = 0;
     while(data[j] != '\0') {
         serial_putchar(COM1_BASE, data[j]);
         j++;

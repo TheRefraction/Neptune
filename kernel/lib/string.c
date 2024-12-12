@@ -1,4 +1,4 @@
-#include "libk.h"
+#include "string.h"
 
 void *memcpy(char *dst, char *src, int n) {
     char *p = dst;

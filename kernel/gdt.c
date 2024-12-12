@@ -1,7 +1,7 @@
 #include "types.h"
-#include "libk.h"
+#include "lib/string.h"
 
-#define __GDT__
+#define __KERNEL_GDT__
 #include "gdt.h"
 
 // Fonction pour initialiser un descripteur

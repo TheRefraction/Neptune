@@ -1,20 +1,18 @@
 #ifndef __KERNEL_TTY__
 #define __KERNEL_TTY__
 
-// TODO: Use types.h instead and replace current types
-#include <stddef.h>
-#include <stdint.h>
+#include "types.h"
 
 void terminal_initialize(void);
 void terminal_putchar(char);
 void terminal_write(const char*);
 void terminal_movecursor(int, int);
-void terminal_scroll(unsigned int);
-void terminal_setcolor(uint8_t);
+void terminal_scroll(u32);
+void terminal_setcolor(u8);
 
-void enable_cursor(uint8_t, uint8_t);
-void disable_cursor();
-void update_cursor(uint16_t, uint16_t);
-uint16_t getpos_cursor(void);
+void enable_cursor(u8, u8);
+void disable_cursor(void);
+void update_cursor(u16, u16);
+u16 getpos_cursor(void);
 
 #endif

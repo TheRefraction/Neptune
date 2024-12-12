@@ -1,28 +1,35 @@
-#include <stdint.h>
+#include "types.h"
+#include "io.h"
+#include "lib/string.h"
+#include "idt.h"
 
-#define IDT_ENTRIES 256
+struct idtr kidtr;
+struct idtdesc kidt[IDTSIZE];
 
-// Structure pour une entrée de l'IDT (8 octets)
-struct idt_entry {
-    uint16_t offset_low;    // Bits 0-15 de l'adresse ISR
-    uint16_t selector;      // Sélecteur de segment (CS)
-    uint8_t  zero;          // Champ réservé (doit être 0)
-    uint8_t  type_attr;     // Type et attributs
-    uint16_t offset_high;   // Bits 16-31 de l'adresse ISR
-} __attribute__((packed));
+void _asm_default_irq(void);
+void _asm_irq_0(void);
+void _asm_irq_1(void);
 
-struct idt_ptr {
-    uint16_t limit;         // Taille de l'IDT - 1
-    uint32_t base;          // Adresse de base de l'IDT
-} __attribute__((packed));
+void init_idt_desc(u16 select, u32 offset, u16 type, struct idtdesc* desc) {
+    desc->offset_low = (offset & 0xFFFF);
+    desc->select = select;
+    desc->type = type;
+    desc->offset_high = (offset & 0xFFFF0000) >> 16;
+}
 
-struct idt_entry idt[IDT_ENTRIES];
-struct idt_ptr idt_ptr;
+void init_idt(void) {
+    int i;
+    for (i = 0; i < IDTSIZE; i++) {
+        init_idt_desc(0x08, (u32) _asm_default_irq, INTGATE, &kidt[i]);
+    }
 
-void idt_set_entry(int num, uint32_t base, uint16_t selector, uint8_t type_attr) {
-    idt[num].offset_low = base & 0xFFFF;        // Partie basse de l'adresse
-    idt[num].selector = selector;              // Sélecteur de segment
-    idt[num].zero = 0;                         // Champ réservé à 0
-    idt[num].type_attr = type_attr;            // Type et attributs
-    idt[num].offset_high = (base >> 16) & 0xFFFF; // Partie haute de l'adresse
+    init_idt_desc(0x08, (u32) _asm_irq_0, INTGATE, &kidt[32]); // Clock INT
+    init_idt_desc(0x08, (u32) _asm_irq_1, INTGATE, &kidt[33]); // Keyboard INT
+							      
+    kidtr.limit = IDTSIZE * 8;
+    kidtr.base = IDTBASE;
+
+    memcpy((char*) kidtr.base, (char*) kidt, kidtr.limit);
+
+    asm("lidtl (kidtr)");
 }

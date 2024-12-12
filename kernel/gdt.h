@@ -27,7 +27,7 @@ struct gdtr {
 void init_gdt_desc(u32, u32, u8, u8, struct gdtdesc*);
 void init_gdt(void);
 
-#ifdef __GDT__
+#ifdef __KERNEL_GDT__
     struct gdtdesc kgdt[GDTSIZE];
     struct gdtr kgdtr;
 #else
