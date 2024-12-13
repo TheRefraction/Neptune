@@ -7,6 +7,11 @@ void isr_default(void) {
     terminal_write("Default interrupt\n");
 }
 
+void isr_GP_ex(void) {
+   terminal_write("GP Fault!\n");
+   while(1);
+}
+
 void isr_clock(void) {
     static int tic = 0;
     static int sec = 0;
@@ -14,7 +19,7 @@ void isr_clock(void) {
     if (tic % 100 == 0) {
         sec++;
 	tic = 0;
-	terminal_write("Clock\n");
+	terminal_putchar('.');
     }
 }
 

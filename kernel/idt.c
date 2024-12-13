@@ -7,6 +7,7 @@ struct idtr kidtr;
 struct idtdesc kidt[IDTSIZE];
 
 void _asm_default_irq(void);
+void _asm_ex_GP(void);
 void _asm_irq_0(void);
 void _asm_irq_1(void);
 
@@ -22,6 +23,8 @@ void init_idt(void) {
     for (i = 0; i < IDTSIZE; i++) {
         init_idt_desc(0x08, (u32) _asm_default_irq, INTGATE, &kidt[i]);
     }
+
+    init_idt_desc(0x08, (u32) _asm_ex_GP, INTGATE, &kidt[13]); // GP
 
     init_idt_desc(0x08, (u32) _asm_irq_0, INTGATE, &kidt[32]); // Clock INT
     init_idt_desc(0x08, (u32) _asm_irq_1, INTGATE, &kidt[33]); // Keyboard INT

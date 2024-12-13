@@ -5,6 +5,8 @@
 
 #define sti asm("sti"::)
 
+#define brk asm("xchg %%bx, %%bx"::)
+
 #define outb(port,value) \
 	asm volatile ("outb %%al, %%dx" :: "d" (port), "a" (value));
 
