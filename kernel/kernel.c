@@ -39,6 +39,18 @@ void kernel_start(void) {
 }
 
 void task1(void) {
+    char *msg = (char*) 0x100;
+    msg[0] = 'T';
+    msg[1] = 'a';
+    msg[2] = 's';
+    msg[3] = 'k';
+    msg[4] = 0;
+
+    // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov %0, %%ebx \n \
+         mov $0x01, %%eax \n \
+	 int $0x30" :: "m" (msg));
+
     while(1);
     return;
 }

@@ -1,5 +1,5 @@
-extern isr_default, isr_GP_ex, isr_clock, isr_keyboard
-global _asm_default_irq, _asm_ex_GP, _asm_irq_0, _asm_irq_1
+extern isr_default, isr_GP_ex, isr_clock, isr_keyboard, do_syscalls
+global _asm_default_irq, _asm_ex_GP, _asm_irq_0, _asm_irq_1, _asm_syscalls
 
 %macro	SAVE_REGS 0
 	pushad 
@@ -26,6 +26,14 @@ _asm_default_irq:
     call isr_default
     mov al, 0x20
     out 0x20, al
+    RESTORE_REGS
+    iret
+
+_asm_syscalls:
+    SAVE_REGS
+    push eax
+    call do_syscalls
+    pop eax
     RESTORE_REGS
     iret
 
