@@ -7,6 +7,8 @@
 
 #define brk asm("xchg %%bx, %%bx"::)
 
+#define hlt asm("hlt"::)
+
 #define outb(port,value) \
 	asm volatile ("outb %%al, %%dx" :: "d" (port), "a" (value));
 

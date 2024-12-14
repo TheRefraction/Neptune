@@ -8,10 +8,10 @@
 #define SCREEN_DATA 0x3D5
 
 // TODO: Move these variables inside tty.h
-static const int VGA_WIDTH = 80;
-static const int VGA_HEIGHT = 25;
-static const u16* VGA_MEMORY = (u16*) 0xB8000;
-static const u16* VGA_MEMORY_LIMIT = (u16*) 0xB8FA0;
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define VGA_MEMORY 0xB8000
+#define VGA_MEMORY_LIMIT 0xB8FA0
 
 static u32 terminal_row;
 static u32 terminal_col;
@@ -64,7 +64,7 @@ void terminal_initialize(void) {
 	terminal_row = 0;
 	terminal_col = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE);
-	terminal_buffer = VGA_MEMORY;
+	terminal_buffer = (u16*) VGA_MEMORY;
 
 	for (u32 y = 0; y < VGA_HEIGHT; y++) {
 		for (u32 x = 0; x < VGA_WIDTH; x++) {
@@ -78,12 +78,13 @@ void terminal_setcolor(u8 color) {
 }
 
 void terminal_scroll(u32 line) {
-	u16* tmp = 0;
+	u8 *video;
+	u8 *tmp;
 
-	for (u16* video = VGA_MEMORY; video < VGA_MEMORY_LIMIT; video += 2) {
-		tmp = video + line * 160;
+	for (video = (u8*) VGA_MEMORY; video < (u8*) VGA_MEMORY_LIMIT; video += 2) {
+		tmp = (u8*) (video + line * 160);
 
-		if (tmp < VGA_MEMORY_LIMIT) {
+		if (tmp < (u8*) VGA_MEMORY_LIMIT) {
 			*video = *tmp;
 			*(video + 1) = *(tmp + 1);
 		} else {
@@ -138,6 +139,20 @@ void terminal_write(const char* data) {
 		terminal_putchar(data[i]);
 		i++;
 	}
+}
+
+void terminal_dump(u8* addr, u32 n) {
+    char c1, c2;
+    char *tab = "0123456789ABCDEF";
+
+    while (n--) {
+        c1 = tab[(*addr & 0xF0) >> 4];
+	c2 = tab[*addr & 0xF0];
+
+	terminal_putchar(c1);
+	terminal_putchar(c2);
+	addr++;
+    }
 }
 
 void terminal_movecursor(int x, int y) {

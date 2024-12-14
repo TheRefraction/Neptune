@@ -1,5 +1,5 @@
-extern isr_default, isr_GP_ex, isr_clock, isr_keyboard, do_syscalls
-global _asm_default_irq, _asm_ex_GP, _asm_irq_0, _asm_irq_1, _asm_syscalls
+extern isr_default, isr_GP_ex, isr_PF_ex, isr_clock, isr_keyboard, do_syscalls
+global _asm_default_irq, _asm_ex_GP, _asm_ex_PF, _asm_irq_0, _asm_irq_1, _asm_syscalls
 
 %macro	SAVE_REGS 0
 	pushad 
@@ -8,8 +8,8 @@ global _asm_default_irq, _asm_ex_GP, _asm_irq_0, _asm_irq_1, _asm_syscalls
 	push fs
 	push gs 
 	push ebx
-	mov bx,0x10
-	mov ds,bx
+	mov bx, 0x10
+	mov ds, bx
 	pop ebx
 %endmacro
 
@@ -40,6 +40,13 @@ _asm_syscalls:
 _asm_ex_GP:
     SAVE_REGS
     call isr_GP_ex
+    RESTORE_REGS
+    add esp, 4
+    iret
+
+_asm_ex_PF:
+    SAVE_REGS
+    call isr_PF_ex
     RESTORE_REGS
     add esp, 4
     iret

@@ -11,6 +11,7 @@ void _asm_irq_0(void);
 void _asm_irq_1(void);
 
 void _asm_ex_GP(void);
+void _asm_ex_PF(void);
 
 void _asm_syscalls(void);
 
@@ -28,6 +29,7 @@ void init_idt(void) {
     }
 
     init_idt_desc(0x08, (u32) _asm_ex_GP, INTGATE, &kidt[13]); // General Protection Fault
+    init_idt_desc(0x08, (u32) _asm_ex_PF, INTGATE, &kidt[14]); // Page Fault
 
     init_idt_desc(0x08, (u32) _asm_irq_0, INTGATE, &kidt[32]); // Clock INT
     init_idt_desc(0x08, (u32) _asm_irq_1, INTGATE, &kidt[33]); // Keyboard INT
