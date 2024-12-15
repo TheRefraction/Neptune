@@ -76,6 +76,8 @@ This can be changed by setting the ```OBJ``` variable to the chosen medium if it
 The generated disk image can be opened with either Bochs or QEMU. For debugging purposes, Bochs is recommended. You may have to install ```bochs-x``` in order to display the window and debugging GUI. Configuration files and BIOS images are saved onto the bochs folder.
 <br>
 Run the following command ```make run```.
+<br>
+Nota Bene: By default Bochs places a breakpoint before any execution. Thus pressing the "Continue" button once allows the image to be loaded and run.
 
 ---
 
