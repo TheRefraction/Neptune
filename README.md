@@ -48,7 +48,11 @@ Versions can be changed through the Makefile. Recommended versions are:
 
 ### Bootloader <a name="bootloader"></a>
 
-TODO
+The bootloader can be built using the ```make bootloader```. The Makefile outputs a binary file ```bootloader.bin``` which is then copied onto the first sectors of the medium.
+<br>
+N/OS bootloader is said to be a 2-stage bootloader. At that point the computer is working in *Real Mode*. The first part ```boot.bin``` weighs 512 bytes (a sector) and initializes segments to 0x07C0. Its sector is marked as bootable in the BIOS using the magic word 0x55AA (*end of sector*). It then loads the larger part of the bootloader (*stage 2, 2 sectors*) onto address 0x1000 (logical address: 10 * 0x100 (*base/selector*) + 0x0 (*offset*)) and jumps to it.
+<br>
+Afterwards ```loader.bin``` proceeds to reset segments, to enable the A20 Line (*allows to load bigger files in memory*), to switch to *Protected Mode* and to load and jump onto the Kernel (*15 sectors loaded at 0x2000*).
 
 ---
 
@@ -79,8 +83,9 @@ Run the following command ```make run```.
 
 	- bochs: Bochs configuration files
 	- boot: Bootloader source code
-	- doc: Documentation
+	- doc: Documentation (UNUSED FOR NOW)
 	- kernel: Kernel source code
- 	- lib: Standard c library code
+        - kernel/lib : Kernel C library code (LibK)
+ 	- lib: Standard C library code (UNUSED FOR NOW)
 
 ---
