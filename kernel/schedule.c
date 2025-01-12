@@ -83,9 +83,9 @@ void schedule(void) {
 
     // Get new process pid 
     if (n_proc > 1 + current->pid) {
-      current = &p_list[1 + current->pid];
+      p = &p_list[1 + current->pid];
     } else {
-      current = &p_list[0];
+      p = &p_list[0];
     }
 
     // Switch task
