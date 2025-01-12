@@ -3,6 +3,9 @@
 #include "lib/string.h"
 #include "idt.h"
 
+struct idtr kidtr;
+struct idtdesc kidt[IDTSIZE];
+
 void _asm_default_irq(void);
 void _asm_irq_0(void);
 void _asm_irq_1(void);

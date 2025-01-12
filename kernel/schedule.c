@@ -2,7 +2,7 @@
 #include "gdt.h"
 #include "process.h"
 
-void switch_to_task(u32 n, u8 mode) {
+void switch_to_task(int n, int mode) {
   u32 k_esp, eflags;
   u16 k_ss, ss, cs;
 
