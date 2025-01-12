@@ -6,7 +6,7 @@ void do_syscalls(u32 id) {
 
   switch(id) {
     case 1: { // Display text
-      asm("mov %ebx, %0": "=m"(str): );
+      asm("mov %%ebx, %0": "=m"(str): );
 	    terminal_write(str);
 
 	    break;
