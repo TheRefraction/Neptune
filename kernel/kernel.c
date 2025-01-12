@@ -41,8 +41,8 @@ void task1(void) {
 
   while(1) {
   // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx \n \
-      mov $0x01, %%eax \n \
+    asm("mov %0, %%ebx; \
+      mov $0x01, %%eax; \
 	    int $0x30" :: "m" (msg));
     for (i = 0; i < 10000000; i++);
   }
@@ -64,8 +64,8 @@ void task2(void) {
 
   while(1) {
   // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx \n \
-      mov $0x01, %%eax \n \
+    asm("mov %0, %%ebx; \
+      mov $0x01, %%eax; \
 	    int $0x30" :: "m" (msg));
     for (i = 0; i < 10000000; i++);
   }

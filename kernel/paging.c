@@ -88,7 +88,7 @@ u32* pd_create(u32* code_phys_addr, u32 code_size) {
 
   // Kernel space (to allow syscalls)
   pd[0] = pd0[0];
-  pd[0] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);
+  pd[0] |= (PAGE_PRESENT + PAGE_RW);
 
   // User space 
   u32 pages = code_size / PAGE_SIZE;
@@ -96,14 +96,15 @@ u32* pd_create(u32* code_phys_addr, u32 code_size) {
     pages++;
   }
 
+  u32* pt;
   for (i = 0; pages; i++) {
-    u32* pt = (u32*) get_page_frame();
+    pt = (u32*) get_page_frame();
     
     pd[(USER_OFFSET + i * PAGE_SIZE * 1024) >> 22] = (u32) pt;
     pd[(USER_OFFSET + i * PAGE_SIZE * 1024) >> 22] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);
 
     for (j = 0; j < 1024 && pages; j++, pages--) {
-      pt[j] = (u32) (code_phys_addr + i * PAGE_SIZE * 1024 + j * PAGE_SIZE);
+      pt[j] = (u32) (code_phys_addr + PAGE_SIZE * (1024 * i + j));
       pt[j] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);
     }
   }

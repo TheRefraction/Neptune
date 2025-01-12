@@ -22,13 +22,16 @@ void init_gdt(void) {
     default_tss.ss0 = 0x18;
     
     init_gdt_desc(0x0, 0x0, 0x0, 0x0, &kgdt[0]); // NULL DESCRIPTOR
+    
     init_gdt_desc(0x0, 0xFFFFF, 0x9B, 0x0D, &kgdt[1]); // CODE 
     init_gdt_desc(0x0, 0xFFFFF, 0x93, 0x0D, &kgdt[2]); // DATA
     init_gdt_desc(0x0, 0x0, 0x97, 0x0D, &kgdt[3]); // STACK
+  
     init_gdt_desc(0x0, 0xFFFFF, 0xFF, 0x0D, &kgdt[4]); // USER CODe
     init_gdt_desc(0x0, 0xFFFFF, 0xF3, 0x0D, &kgdt[5]); // USER DATA
     init_gdt_desc(0x0, 0x0, 0xF7, 0x0D, &kgdt[6]); // USER STACK
-    init_gdt_desc((u32) &default_tss, 0x67, 0xE9, 0x00, &kgdt[7]);
+    
+  init_gdt_desc((u32) &default_tss, 0x67, 0xE9, 0x00, &kgdt[7]);
 
     kgdtr.limit = 8 * GDTSIZE;
     kgdtr.base = GDTBASE;

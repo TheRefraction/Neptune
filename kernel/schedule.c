@@ -2,17 +2,54 @@
 #include "gdt.h"
 #include "process.h"
 
+void switch_to_task(u32 n, u8 mode) {
+  u32 k_esp, eflags;
+  u16 k_ss, ss, cs;
+
+  current = &p_list[n];
+
+  // Load TSS 
+  default_tss.ss0 = current->kstack.ss0;
+  default_tss.esp0 = current->kstack.esp0;
+
+  ss = current->regs.ss;
+  cs = current->regs.cs;
+  eflags = (current->regs.eflags | 0x200) & 0xFFFFBFFF;
+
+  if (mode == KERNEL_MODE) {
+    k_ss = current->regs.ss;
+    k_esp = current->regs.esp;
+  } else {
+    k_ss = current->kstack.ss0;
+    k_esp = current->kstack.esp0;
+  }
+
+  asm("mov %0, %%ss; \
+      mov %1, %%esp; \
+      cmp %[KMODE], %[mode]; \
+      je next; \
+      push %2; \
+      push %3; \
+      next: \
+      push %4; \
+      push %5; \
+      push %6; \
+      push %7; \
+      ljmp $0x08, $do_switch" :: \
+      "m"(k_ss), "m"(k_esp), "m"(ss), "m"(current->regs.esp), "m"(eflags), "m"(cs), \
+      "m"(current->regs.eip), "m"(current), [KMODE] "i"(KERNEL_MODE), [mode] "g"(mode));
+}
+
 void schedule(void) {
   u32* stack_ptr;
-  u32 esp0, eflags;
-  u16 ss, cs;
+  struct process *p;
 
-  asm("mov (%%ebp), %%eax \n \
+  asm("mov (%%ebp), %%eax; \
       mov %%eax, %0" : "=m"(stack_ptr) :);
 
   // No process loaded, but one is ready
   if (current == 0 && n_proc) {
-    current = &p_list[0];
+    switch_to_task(0, USER_MODE);
   } else if (n_proc <= 1) { // No scheduling for one task
     return;
   } else if (n_proc > 1) {
@@ -32,32 +69,30 @@ void schedule(void) {
     current->regs.fs = stack_ptr[3];
     current->regs.gs = stack_ptr[2];
 
-    current->regs.esp = stack_ptr[17];
-    current->regs.ss = stack_ptr[18];
+    // Interrupt
+    if (current->regs.cs == 0x08) {
+      current->regs.esp = 12 + stack_ptr[9];
+      current->regs.ss = default_tss.ss0;
+    } else {
+      current->regs.esp = stack_ptr[17];
+      current->regs.ss = stack_ptr[18]; 
+    }
 
-    default_tss.esp0 = (u32) (stack_ptr + 19);
+    current->kstack.ss0 = default_tss.ss0;
+    current->kstack.esp0 = default_tss.esp0;
 
-    // Get new process 
+    // Get new process pid 
     if (n_proc > 1 + current->pid) {
       current = &p_list[1 + current->pid];
     } else {
       current = &p_list[0];
     }
-  }
 
-  // Push registers onto the stack, restore registers of new task and switch
-  ss = current->regs.ss;
-  cs = current->regs.cs;
-  eflags = (current->regs.eflags | 0x200) & 0xFFFFBFFF;
-  esp0 = default_tss.esp0;
-  
-  asm("	mov %0, %%esp \n \
-    push %1 \n \
-    push %2 \n \
-    push %3 \n \
-    push %4 \n \
-    push %5 \n \
-    push %6 \n \
-    ljmp $0x08, $do_switch"
-    :: "m" (esp0), "m" (ss), "m" (current->regs.esp), "m" (eflags), "m" (cs), "m" (current->regs.eip), "m" (current));
+    // Switch task
+    if (p->regs.cs == 0x08) {
+      switch_to_task(p->pid, KERNEL_MODE);
+    } else {
+      switch_to_task(p->pid, USER_MODE);
+    }
+  }
 }

@@ -34,7 +34,7 @@ void init_idt(void) {
     init_idt_desc(0x08, (u32) _asm_irq_0, INTGATE, &kidt[32]); // Clock INT
     init_idt_desc(0x08, (u32) _asm_irq_1, INTGATE, &kidt[33]); // Keyboard INT
 			
-    init_idt_desc(0x08, (u32) _asm_syscalls, INTGATE | 0x6000, &kidt[48]); // System calls (0x30)
+    init_idt_desc(0x08, (u32) _asm_syscalls, TRAPGATE, &kidt[48]); // System calls (0x30)
 
     kidtr.limit = IDTSIZE * 8;
     kidtr.base = IDTBASE;
