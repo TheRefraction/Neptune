@@ -1,67 +1,101 @@
 #include "types.h"
 
-#define PAGING_FLAG 0x80000000 // 31st bit of CR0 register
+#define __KERNEL_PAGING__
+#include "paging.h"
 
-#define PAGE_PRESENT 0x1       // Indique que la page est présente en mémoire
-#define PAGE_RW 0x2            // Indique que la page est en lecture/écriture
-#define PAGE_USER 0x4          // Indique que la page est accessible par les utilisateurs
-#define PAGE_SIZE 0x1000         // Taille d'une page (4 Kio)
+char* get_page_frame(void) {
+  int page = -1;
 
-#define PD_BASE 0x20000 // Address of Pages Directory 
-#define PT_BASE 0x21000 // Address of first Pages Table
+  for (int byte = 0; byte < PAGE_MAX / 8; byte++) {
+    if (mem_bitmap[byte] != 0xFF) {
+      for (u8 bit = 0; bit < 8; bit++) {
+        if (!(mem_bitmap[byte] & (1 << bit))) {
+          page = 8 * byte + bit;
+          // Set the found page to reserved/used
+          set_page_frame_used(page);
+          return (char*) (page * PAGE_SIZE);
+        }
+      }
+    }
+  }
+
+  // No available page
+  return (char*) -1;
+}
 
 // Fonction d'initialisation de la pagination (Adresse virtuelle = adresse physique) sur 4 Mio
 void init_paging(void) {
-    u16 i;
+  u32 page_addr = 0x0;
+  int i;
 
-    // Initialiser le répertoire des pages avec des entrées nulles
-    u32 *page_directory = (u32*) PD_BASE;
-    
-    for (i = 0; i < 1024; i++) {
-        page_directory[i] = 0x0;
-    }
+  // Bitmap initialization
+  for (i = 0; i < RAM_MAXPAGE / 8; i++) {
+    mem_bitmap[i] = 0;
+  }
 
-    // Set first entry
-    page_directory[0] = (PT_BASE | PAGE_PRESENT | PAGE_RW);
+  // Reserved pages for kernel
+  for (i = PAGE(0x0); i < PAGE(0x20000); i++) {
+    set_page_frame_used(i);
+  }
 
-    // Initialiser la première table des pages d'indice
-    u32 *page_table0 = (u32*) PT_BASE;
-    u32 page_addr = 0x0;
-    
-    for (i = 0; i < 1024; i++) {
-        page_table0[i] = (page_addr | PAGE_PRESENT | PAGE_RW);
-        page_addr += PAGE_SIZE;
-    }
+  // Reserved pages for hardware (screen, keyboard, ...)
+  for (i = PAGE(0xA0000); i < PAGE(0x100000); i++) {
+    set_page_frame_used(i);
+  }
+
+  // Initialize Page directory and first Page table
+  pd0 = (u32*) get_page_frame();
+  pt0 = (u32*) get_page_frame();
+
+  for (i = 0; i < 1024; i++) {
+    pd0[i] = 0x0;
+  }
+
+  // Add first table to directory
+  pd0[0] = (u32) pt0;
+  pd0[0] |= PAGE_PRESENT;
+  pd0[0] |= PAGE_RW;
+
+  // Initialize first page table
+  for (i = 0; i < 1024; i++) {
+    pt0[i] = page_addr;
+    pt0[i] |= PAGE_PRESENT;
+    pt0[i] |= PAGE_RW;
+
+    page_addr += PAGE_SIZE;
+  }
+
 
     /*
      * Passage de l'adresse du répertoire de pages au registre CR3
      * Mise à 1 du bit de pagination (n°31) dans le registre CR0
      */
-    asm("mov %0, %%eax \n \
-	 mov %%eax, %%cr3 \n \
-	 mov %%cr0, %%eax \n \
-	 or %1, %%eax \n \
-	 mov %%eax, %%cr0" :: "i"(PD_BASE), "i"(PAGING_FLAG));
+  asm("mov %0, %%eax \n \
+    mov %%eax, %%cr3 \n \
+	  mov %%cr0, %%eax \n \
+	  or %1, %%eax \n \
+	  mov %%eax, %%cr0" :: "i"(pd0), "i"(PAGING_FLAG));
 }
 
-// Fonction pour mapper une adresse virtuelle à une adresse physique
-/*void map_page(u32 virt_addr, u32 phys_addr, u32 flags) {
-    u32 page_dir_index = (virt_addr >> 22) & 0x3FF; // Bits 31:22
-    u32 page_table_index = (virt_addr >> 12) & 0x3FF; // Bits 21:12
+u32* pd_create_task(void) {
+  int i;
 
-    // Vérifier si la table des pages associée existe
-    if (!(page_directory[page_dir_index] & PAGE_PRESENT)) {
-        // erreur
-        return;
-    }
+  u32* pd = (u32*) get_page_frame();
+  for (i = 0; i < 1024; i++) {
+    pd[i] = 0x0;
+  }
 
+  u32* pt = (u32*) get_page_frame();
+  for (i = 0; i < 1024; i++) {
+    pt[i] = 0x0;
+  }
 
-    // Récupérer l'adresse de la table des pages
-    u32 *table = (uint32_t *)(page_directory[page_dir_index] & ~0xFFF);
+  pd[0] = (pd0[0] | PAGE_PRESENT | PAGE_RW);
+  
+  pd[USER_OFFSET >> 22] = (u32) (pt | PAGE_PRESENT | PAGE_RW | PAGE_USER);
 
-        // Ajouter une entrée dans la table des pages
-    table[page_table_index] = (phys_addr & ~0xFFF) | (flags & 0xFFF);
+  pt[0] = 0x100000;
+  pt[0] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);
 
-    // Invalider le TLB pour cette page
-    asm volatile("invlpg (%0)" :: "r"(virt_addr) : "memory");
-}*/
+  return pd;
+}

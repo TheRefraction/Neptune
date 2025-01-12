@@ -3,12 +3,12 @@
 #include "tty.h"
 #include "io.h"
 #include "idt.h"
+#include "paging.h"
 #include "lib/string.h"
 
 extern struct tss default_tss;
 
 void init_pic(void);
-void init_paging(void);
 
 void kernel_main(void);
 
@@ -41,26 +41,35 @@ void kernel_start(void) {
 
 // UNUSED FOR NOW
 void task1(void) {
-    char *msg = (char*) 0x100;
-    msg[0] = 'T';
-    msg[1] = 'a';
-    msg[2] = 's';
-    msg[3] = 'k';
-    msg[4] = 0;
+  char *msg = (char*) 0x40000100;
+  msg[0] = 'T';
+  msg[1] = 'a';
+  msg[2] = 's';
+  msg[3] = 'k';
+  msg[4] = 0;
 
-    // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx \n \
-         mov $0x01, %%eax \n \
-	 int $0x30" :: "m" (msg));
+  // Call syscall n°1 (eax) and prints the string loaded in ebx
+  asm("mov %0, %%ebx \n \
+    mov $0x01, %%eax \n \
+	  int $0x30" :: "m" (msg));
 
-    while(1);
-    return;
+  while(1);
+  return;
 }
 
 void kernel_main(void) {
-    //memcpy((char*) 0x30000, (char*) &task1, 100);
-    
-    //terminal_write("Switching to user task\n");
+  init_paging();
+  terminal_write("Paging enabled.\n");
+
+  //sti;
+  //terminal_write("Interrupts enabled.\n");
+  
+  u32* pd = pd_create_task();
+  memcpy((char*) 0x100000, (char*) &task1, 100);
+  terminal_write("Task created.\n");
+
+  terminal_write("Switching to user task...\n");
+  terminal_write("Switching to user task\n");
     /*
      * Disable interrupts
      * Push UStack Selector 0x30 + ring 3 -> 0x33
@@ -71,31 +80,24 @@ void kernel_main(void) {
      * Set data segment (DS) to User Data selector (0x28 + ring 3 -> 0x2B)
      * Pop return address (cs:eip), EFLAGS register and stack registers (ss and esp).
      */
-    /*asm("cli \n \
-         push $0x33 \n \
-         push $0x30000 \n \
-	 pushfl \n \
-         popl %%eax \n \
-	 orl $0x200, %%eax \n \
-	 and $0xFFFFBFFF, %%eax \n \
-	 push %%eax \n \
-	 push $0x23 \n \
-	 push $0x0 \n \
-	 movl $0x20000, %0 \n \
-	 movw $0x2B, %%ax \n \
-	 movw %%ax, %%ds \n \
-	 iret": "=m"(default_tss.esp0):);
-   
-    terminal_write("FATAL EXCEPTION! N/OS KERNEL HALTING!!\n");
-    hlt;*/
+  asm ("   cli \n \
+		movl $0x20000, %0 \n \
+		movl %1, %%eax \n \
+		movl %%eax, %%cr3 \n \
+		push $0x33 \n \
+		push $0x40000F00 \n \
+		pushfl \n \
+		popl %%eax \n \
+		orl $0x200, %%eax \n \
+		and $0xFFFFBFFF, %%eax \n \
+		push %%eax \n \
+		push $0x23 \n \
+		push $0x40000000 \n \
+		movw $0x2B, %%ax \n \
+		movw %%ax, %%ds \n \
+		iret" : "=m"(default_tss.esp0) : "m"(pd)); 
+ 
+  while(1);
 
-    init_paging();
-    terminal_write("Paging enabled.\n");
-
-    sti;
-    terminal_write("Interrupts enabled.\n");
-
-    while(1);
-
-    hlt;
+  hlt;
 }
