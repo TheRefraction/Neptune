@@ -29,7 +29,7 @@ void init_paging(void) {
   int i;
 
   // Bitmap initialization
-  for (i = 0; i < RAM_MAXPAGE / 8; i++) {
+  for (i = 0; i < PAGE_MAX / 8; i++) {
     mem_bitmap[i] = 0;
   }
 
@@ -92,7 +92,8 @@ u32* pd_create_task(void) {
 
   pd[0] = (pd0[0] | PAGE_PRESENT | PAGE_RW);
   
-  pd[USER_OFFSET >> 22] = (u32) (pt | PAGE_PRESENT | PAGE_RW | PAGE_USER);
+  pd[USER_OFFSET >> 22] = (u32) pt;
+  pd[USER_OFFSET >> 22] |= (PAGE_PRESENT | PAGE_RW | PAGE_USER);
 
   pt[0] = 0x100000;
   pt[0] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);

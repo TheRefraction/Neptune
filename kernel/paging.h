@@ -24,6 +24,10 @@
 #define VADDR_PT_OFFSET(addr)   ((addr) & 0x003FF000) >> 12
 #define VADDR_PG_OFFSET(addr)   (addr) & 0x00000FFF
 
+// Use or release a page
+#define set_page_frame_used(page)   mem_bitmap[((u32) page) / 8] |= (1 << (((u32) page) % 8))
+#define release_page_frame(p_addr)  mem_bitmap[((u32) p_addr / PAGE_SIZE) / 8] &= (1 << (((u32) p_addr / PAGE_SIZE) % 8))
+
 struct pd_entry {
   u32 present:1;
   u32 writable:1;
