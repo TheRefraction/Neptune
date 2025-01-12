@@ -44,4 +44,5 @@ do_switch:
   pop eax 
 
   ; Switch task 
-  iret 
+  iret
+

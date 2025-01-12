@@ -35,9 +35,8 @@ void isr_clock(void) {
   if (tic % 100 == 0) {
     sec++;
 	  tic = 0;
-    schedule();
   }
-  //schedule();
+  schedule();
 }
 
 void isr_keyboard(void) {

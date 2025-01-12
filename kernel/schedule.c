@@ -2,8 +2,6 @@
 #include "gdt.h"
 #include "process.h"
 
-#include "schedule.h"
-
 void schedule(void) {
   u32* stack_ptr;
   u32 esp0, eflags;

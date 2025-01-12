@@ -51,12 +51,14 @@ void task1(void) {
   msg[5] = '\n';
   msg[6] = 0;
 
+  int i;
+
   while(1) {
   // Call syscall n°1 (eax) and prints the string loaded in ebx
     asm("mov %0, %%ebx \n \
       mov $0x01, %%eax \n \
 	    int $0x30" :: "m" (msg));
-
+    for (i = 0; i < 10000000; i++);
   }
   
   return;
@@ -72,12 +74,14 @@ void task2(void) {
   msg[5] = '\n';
   msg[6] = 0;
 
+  int i;
+
   while(1) {
   // Call syscall n°1 (eax) and prints the string loaded in ebx
     asm("mov %0, %%ebx \n \
       mov $0x01, %%eax \n \
 	    int $0x30" :: "m" (msg));
-
+    for (i = 0; i < 10000000; i++);
   }
   
   return;
@@ -92,9 +96,9 @@ void kernel_main(void) {
   load_task((u32*) 0x200000, (u32*) &task2, 0x2000);
   terminal_write("Tasks loaded.\n");
 
-  sti;
   terminal_write("Interrupts enabled.\n");
-     
+  sti;
+
   while(1);
 
   hlt;
