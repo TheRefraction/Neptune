@@ -17,7 +17,7 @@ void schedule(void) {
     current = &p_list[0];
   } else if (n_proc <= 1) { // No scheduling for one task
     return;
-  } else (n_proc > 1) {
+  } else if (n_proc > 1) {
     // Save current registers
     current->regs.eflags = stack_ptr[16];
     current->regs.cs  = stack_ptr[15];
