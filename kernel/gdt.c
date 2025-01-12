@@ -4,8 +4,6 @@
 #define __KERNEL_GDT__
 #include "gdt.h"
 
-struct tss default_tss;
-
 // Fonction pour initialiser un descripteur
 void init_gdt_desc(u32 base, u32 limit, u8 access, u8 other, struct gdtdesc *desc) {
     desc->limit_low = (limit & 0xFFFF);

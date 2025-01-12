@@ -48,12 +48,12 @@ struct tss {
     u16 debug_flag, io_map;
 } __attribute__((packed));
 
-extern struct tss default_tss;
-
 #ifdef __KERNEL_GDT__
-    struct gdtdesc kgdt[GDTSIZE];
-    struct gdtr kgdtr;
+  struct gdtdesc kgdt[GDTSIZE];
+  struct gdtr kgdtr;
+  struct tss default_tss;
 #else
-    extern struct gdtdesc kgdt[];
-    extern struct gdtr kgdtr;
+  extern struct gdtdesc kgdt[];
+  extern struct gdtr kgdtr;
+  extern struct tss default_tss;
 #endif

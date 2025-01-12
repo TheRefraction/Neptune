@@ -6,9 +6,11 @@
 char* get_page_frame(void) {
   int page = -1;
 
-  for (int byte = 0; byte < PAGE_MAX / 8; byte++) {
+  int byte, bit;
+
+  for (byte = 0; byte < PAGE_MAX / 8; byte++) {
     if (mem_bitmap[byte] != 0xFF) {
-      for (u8 bit = 0; bit < 8; bit++) {
+      for (bit = 0; bit < 8; bit++) {
         if (!(mem_bitmap[byte] & (1 << bit))) {
           page = 8 * byte + bit;
           // Set the found page to reserved/used
@@ -100,18 +102,12 @@ u32* pd_create(u32* code_phys_addr, u32 code_size) {
   for (i = 0; pages; i++) {
     u32* pt = (u32*) get_page_frame();
     
-    u32 index = (USER_OFFSET + i * PAGE_SIZE * 1024) >> 22;
+    pd[(USER_OFFSET + i * PAGE_SIZE * 1024) >> 22] = (u32) pt;
+    pd[(USER_OFFSET + i * PAGE_SIZE * 1024) >> 22] |= 7;
 
-    pd[index] = (u32) pt;
-    pd[index] |= PAGE_PRESENT;
-    pd[index] |= PAGE_RW;
-    pd[index] |= PAGE_USER;
-    
     for (j = 0; j < 1024 && pages; j++, pages--) {
-      pt[j] = (u32) (code_phys_addr + PAGE_SIZE * (1024 * i + j));
-      pt[j] |= PAGE_PRESENT;
-      pt[j] |= PAGE_RW;
-      pt[j] |= PAGE_USER;
+      pt[j] = (u32) (code_phys_addr + i * PAGE_SIZE * 1024 + j * PAGE_SIZE);
+      pt[j] |= 7;
     }
   }
 

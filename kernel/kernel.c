@@ -8,29 +8,15 @@
 
 #include "lib/string.h"
 
-extern struct tss default_tss;
-
 void init_pic(void);
 
 void kernel_main(void);
 
 void kernel_start(void) {
 	terminal_initialize();
-	terminal_write("Codename Neptune.\n");
+	terminal_write("Codename Neptune.\n");	
 
-	init_idt();
-	terminal_write("IDT loaded.\n");
-
-	init_pic();
-	terminal_write("PIC initialized.\n");
-
-	init_gdt();
-	terminal_write("GDT loaded.\n");
-
-	// Load the Task Register (TR) with segment descriptor 0x38 (offset 56 in GDTR -> Default TSS)
-	asm("movw $0x38, %ax \n \
-			ltr %ax");
-	terminal_write("Task Register loaded.\n");
+	init_gdt();	
 
 	// Initialize the stack with segment descriptor 0x18 (offset 24 in GDTR -> Stack GDT) 
 	// and set the top of the stack at address 0x20000
@@ -88,6 +74,19 @@ void task2(void) {
 }
 
 void kernel_main(void) {
+  terminal_write("GDT loaded.\n");
+
+  init_idt();
+	terminal_write("IDT loaded.\n");
+
+	init_pic();
+	terminal_write("PIC initialized.\n");
+
+  // Load the Task Register (TR) with segment descriptor 0x38 (offset 56 in GDTR -> Default TSS)
+	asm("movw $0x38, %ax \n \
+			ltr %ax");
+	terminal_write("Task Register loaded.\n");
+
   init_paging();
   terminal_write("Paging enabled.\n");
 

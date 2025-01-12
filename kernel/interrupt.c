@@ -2,6 +2,7 @@
 #include "tty.h"
 #include "io.h"
 #include "keyboard.h"
+#include "schedule.h"
 
 void isr_default(void) {
     terminal_write("Default interrupt\n");
