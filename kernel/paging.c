@@ -74,7 +74,7 @@ void init_paging(void) {
     mov %%eax, %%cr3 \n \
 	  mov %%cr0, %%eax \n \
 	  or %1, %%eax \n \
-	  mov %%eax, %%cr0" :: "i"(pd0), "i"(PAGING_FLAG));
+	  mov %%eax, %%cr0" :: "m"(pd0), "i"(PAGING_FLAG));
 }
 
 u32* pd_create_task(void) {
