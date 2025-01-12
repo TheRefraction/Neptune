@@ -2,7 +2,7 @@
 #include "tty.h"
 #include "io.h"
 
-void do_syscalls(u32 id) {
+void do_syscalls(int id) {
   char* str;
   int i;
 

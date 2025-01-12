@@ -17,6 +17,9 @@ struct idtr {
     u32 base;
 } __attribute__ ((packed));
 
+struct idtr kidtr;
+struct idtdesc kidt[IDTSIZE];
+
 void init_idt_desc(u16, u32, u16, struct idtdesc *);
 void init_idt(void);
 
