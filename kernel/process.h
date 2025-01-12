@@ -1,6 +1,6 @@
 #include "types.h"
 
-#define MAX_PROCESS 16
+#define MAX_PROCESS 32
 
 struct REGS {
   u32 eax, ecx, edx, ebx;
