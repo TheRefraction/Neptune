@@ -1,7 +1,5 @@
 #include "types.h"
 
-#define MAX_PROCESS 16
-
 struct process {
   u32 pid;
   struct {
@@ -14,7 +12,7 @@ struct process {
 } __attribute__ ((packed));
 
 #ifdef __KERNEL_PROCESS__
-  struct process p_list[MAX_PROCESS];
+  struct process p_list[32];
   struct process* current = 0;
   u32 n_proc = 0;
 #else 

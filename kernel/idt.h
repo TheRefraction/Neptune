@@ -1,6 +1,3 @@
-#ifndef __KERNEL_IDT__
-#define __KERNEL_IDT__
-
 #define IDTBASE 0x800
 #define IDTSIZE 0xFF
 
@@ -23,4 +20,3 @@ struct idtr {
 void init_idt_desc(u16, u32, u16, struct idtdesc *);
 void init_idt(void);
 
-#endif
