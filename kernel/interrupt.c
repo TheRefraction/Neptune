@@ -29,14 +29,14 @@ void isr_PF_ex(void) {
 }
 
 void isr_clock(void) {
-    static int tic = 0;
-    static int sec = 0;
-    tic++;
-    if (tic % 100 == 0) {
-        sec++;
-	tic = 0;
-	terminal_putchar('.');
-    }
+  static int tic = 0;
+  static int sec = 0;
+  tic++;
+  if (tic % 100 == 0) {
+    sec++;
+	  tic = 0;
+  }
+  schedule();
 }
 
 void isr_keyboard(void) {

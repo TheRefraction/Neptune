@@ -77,26 +77,43 @@ void init_paging(void) {
 	  mov %%eax, %%cr0" :: "m"(pd0), "i"(PAGING_FLAG));
 }
 
-u32* pd_create_task(void) {
-  int i;
+u32* pd_create(u32* code_phys_addr, u32 code_size) {
+  u32 i, j;
 
+  // Initialize page directory 
   u32* pd = (u32*) get_page_frame();
   for (i = 0; i < 1024; i++) {
-    pd[i] = 0x0;
+    pd[i] = 0;
   }
 
-  u32* pt = (u32*) get_page_frame();
-  for (i = 0; i < 1024; i++) {
-    pt[i] = 0x0;
+  // Kernel space (to allow syscalls)
+  pd[0] = pd0[0];
+  pd[0] |= PAGE_PRESENT;
+  pd[0] |= PAGE_RW;
+
+  // User space 
+  u32 pages = code_size / PAGE_SIZE;
+  if (code_size % PAGE_SIZE) {
+    pages++;
   }
 
-  pd[0] = (pd0[0] | PAGE_PRESENT | PAGE_RW);
-  
-  pd[USER_OFFSET >> 22] = (u32) pt;
-  pd[USER_OFFSET >> 22] |= (PAGE_PRESENT | PAGE_RW | PAGE_USER);
+  for (i = 0; pages; i++) {
+    u32* pt = (u32*) get_page_frame();
+    
+    u32 index = (USER_OFFSET + i * PAGE_SIZE * 1024) >> 22;
 
-  pt[0] = 0x100000;
-  pt[0] |= (PAGE_PRESENT + PAGE_RW + PAGE_USER);
+    pd[index] = (u32) pt;
+    pd[index] |= PAGE_PRESENT;
+    pd[index] |= PAGE_RW;
+    pd[index] |= PAGE_USER;
+    
+    for (j = 0; j < 1024 && pages; j++, pages--) {
+      pt[j] = (u32) (code_phys_addr + PAGE_SIZE * (1024 * i + j));
+      pt[j] |= PAGE_PRESENT;
+      pt[j] |= PAGE_RW;
+      pt[j] |= PAGE_USER;
+    }
+  }
 
   return pd;
 }

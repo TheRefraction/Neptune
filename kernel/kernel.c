@@ -4,6 +4,8 @@
 #include "io.h"
 #include "idt.h"
 #include "paging.h"
+#include "process.h"
+
 #include "lib/string.h"
 
 extern struct tss default_tss;
@@ -39,21 +41,45 @@ void kernel_start(void) {
 	kernel_main();
 }
 
-// UNUSED FOR NOW
 void task1(void) {
   char *msg = (char*) 0x40000100;
   msg[0] = 'T';
   msg[1] = 'a';
   msg[2] = 's';
   msg[3] = 'k';
-  msg[4] = 0;
+  msg[4] = '1';
+  msg[5] = '\n';
+  msg[6] = 0;
 
+  while(1) {
   // Call syscall n°1 (eax) and prints the string loaded in ebx
-  asm("mov %0, %%ebx \n \
-    mov $0x01, %%eax \n \
-	  int $0x30" :: "m" (msg));
+    asm("mov %0, %%ebx \n \
+      mov $0x01, %%eax \n \
+	    int $0x30" :: "m" (msg));
 
-  while(1);
+  }
+  
+  return;
+}
+
+void task2(void) {
+  char *msg = (char*) 0x40000100;
+  msg[0] = 'T';
+  msg[1] = 'a';
+  msg[2] = 's';
+  msg[3] = 'k';
+  msg[4] = '2';
+  msg[5] = '\n';
+  msg[6] = 0;
+
+  while(1) {
+  // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov %0, %%ebx \n \
+      mov $0x01, %%eax \n \
+	    int $0x30" :: "m" (msg));
+
+  }
+  
   return;
 }
 
@@ -61,42 +87,14 @@ void kernel_main(void) {
   init_paging();
   terminal_write("Paging enabled.\n");
 
-  //sti;
-  //terminal_write("Interrupts enabled.\n");
-  
-  u32* pd = pd_create_task();
-  memcpy((char*) 0x100000, (char*) &task1, 100);
-  terminal_write("Task created.\n");
+  // Load tasks to their respective physical address
+  load_task((u32*) 0x100000, (u32*) &task1, 0x2000); 
+  load_task((u32*) 0x200000, (u32*) &task2, 0x2000);
+  terminal_write("Tasks loaded.\n");
 
-  terminal_write("Switching to user task...\n");
-  terminal_write("Switching to user task\n");
-    /*
-     * Disable interrupts
-     * Push UStack Selector 0x30 + ring 3 -> 0x33
-     * Push the top of the stack (defines a memory space of 4Kio from base 0x20000 -> 0x30000)
-     * Push EFLAGS register and disable NT flag (on I386 CPUs, disable hardware task switching) and enable IF flag (allows Interrupts in user mode)
-     * Push User Code selector(0x20 + ring 3 -> 0x23) and pointer (0x0)
-     * Set default_tss.esp0 (kernel stack) to 0x20000
-     * Set data segment (DS) to User Data selector (0x28 + ring 3 -> 0x2B)
-     * Pop return address (cs:eip), EFLAGS register and stack registers (ss and esp).
-     */
-  asm ("   cli \n \
-		movl $0x20000, %0 \n \
-		movl %1, %%eax \n \
-		movl %%eax, %%cr3 \n \
-		push $0x33 \n \
-		push $0x40000F00 \n \
-		pushfl \n \
-		popl %%eax \n \
-		orl $0x200, %%eax \n \
-		and $0xFFFFBFFF, %%eax \n \
-		push %%eax \n \
-		push $0x23 \n \
-		push $0x40000000 \n \
-		movw $0x2B, %%ax \n \
-		movw %%ax, %%ds \n \
-		iret" : "=m"(default_tss.esp0) : "m"(pd)); 
- 
+  sti;
+  terminal_write("Interrupts enabled.\n");
+     
   while(1);
 
   hlt;

@@ -7,7 +7,7 @@ NASM=nasm -f elf
 
 all: $(OBJ)
 
-kernel: kernel_entry.o kernel.o tty.o com.o lib.o gdt.o idt.o interrupt.o int.o pic.o syscalls.o paging.o 
+kernel: kernel_entry.o kernel.o tty.o com.o lib.o gdt.o idt.o interrupt.o int.o pic.o syscalls.o paging.o process.o schedule.o sched.o
 	@echo "Building N/OS Kernel"
 	$(LD) $(LDFLAGS) $^ -o $@.bin
 
@@ -16,6 +16,9 @@ kernel_entry.o: kernel_entry.s
 	$(NASM) $^ -o $@
 
 int.o: int.asm
+	$(NASM) $^ -o $@
+
+sched.o: sched.asm 
 	$(NASM) $^ -o $@
 
 lib.o: 

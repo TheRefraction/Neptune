@@ -58,4 +58,4 @@ struct pt_entry {
 
 char* get_page_frame(void);
 void init_paging(void);
-u32* pd_create_task(void);
+u32* pd_create(u32*, u32);
