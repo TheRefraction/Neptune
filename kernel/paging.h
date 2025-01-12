@@ -1,3 +1,5 @@
+#include "types.h"
+
 #define PAGING_FLAG 0x80000000 // 31st bit of CR0 register
 
 #define PAGE_PRESENT 0x1       // Indique que la page est présente en mémoire
@@ -14,6 +16,8 @@
   u32* pd0;
   u32* pt0;
   u8 mem_bitmap[PAGE_MAX / 8]; // 1Gio
+#else 
+  extern u8 mem_bitmap[];
 #endif
 
 // Get Page number in the bitmap of an address
