@@ -1,4 +1,4 @@
-plugin_ctrl: unmapped=1, biosdev=1, speaker=1, extfpuirq=1, parallel=1, serial=1, gameport=1
+plugin_ctrl: unmapped=1, biosdev=1, speaker=0, extfpuirq=1, parallel=1, serial=1, gameport=1
 config_interface: textconfig
 display_library: x, options=gui_debug
 memory: host=32, guest=32
