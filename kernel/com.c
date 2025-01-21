@@ -56,7 +56,7 @@ void serial_putchar(u32 com, char c) {
     outb(DATA_PORT(com), c);
 }
 
-void serial_write(log_level_t level,const char* data) {
+void serial_write(log_level_t level, const char* data) {
 
     const char* prefix = LOG_LEVEL_PREFIXES[level];
 

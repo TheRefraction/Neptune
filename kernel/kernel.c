@@ -1,34 +1,25 @@
 #include "types.h"
+#include "lib.h"
 #include "gdt.h"
 #include "tty.h"
 #include "io.h"
 #include "idt.h"
-#include "paging.h"
+#include "mem.h"
 #include "process.h"
-
-#include "lib/string.h"
-
-void init_pic(void);
 
 void kernel_main(void);
 
 void kernel_start(void) {
 	terminal_initialize();
-	terminal_write("Codename Neptune.\n");	
-
-	init_gdt();	
-
-	// Initialize the stack with segment descriptor 0x18 (offset 24 in GDTR -> Stack GDT) 
-	// and set the top of the stack at address 0x20000
-	asm("movw $0x18, %ax \n \
-		movw %ax, %ss \n \
-		movl $0x20000, %esp"); 
-
+	terminal_write("Codename Neptune.\n");
+  
 	kernel_main();
 }
 
 void task1(void) {
-  char *msg = (char*) 0x40000100;
+  char *msg = (char*) 0x40001000;
+  u32 i;
+
   msg[0] = 'T';
   msg[1] = 'a';
   msg[2] = 's';
@@ -37,21 +28,19 @@ void task1(void) {
   msg[5] = '\n';
   msg[6] = 0;
 
-  int i;
-
   while(1) {
-  // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx; \
-      mov $0x01, %%eax; \
-	    int $0x30" :: "m" (msg));
+    // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
     for (i = 0; i < 10000000; i++);
   }
-  
+
   return;
 }
 
 void task2(void) {
-  char *msg = (char*) 0x40000100;
+  char *msg = (char*) 0x40001000;
+  u32 i;
+
   msg[0] = 'T';
   msg[1] = 'a';
   msg[2] = 's';
@@ -60,20 +49,40 @@ void task2(void) {
   msg[5] = '\n';
   msg[6] = 0;
 
-  int i;
-
   while(1) {
-  // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx; \
-      mov $0x01, %%eax; \
-	    int $0x30" :: "m" (msg));
+    // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
     for (i = 0; i < 10000000; i++);
   }
-  
+
+  return;
+}
+
+void task3(void) {
+  u32 i;
+
+  while(1) {
+    // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov $0x02, %eax; int $0x30");
+    for (i = 0; i < 10000000; i++);
+  }
+
   return;
 }
 
 void kernel_main(void) {
+  cli;
+
+	init_gdt();
+
+	// Initialize the stack with segment descriptor 0x18 (offset 24 in GDTR -> Stack GDT) 
+	asm("movw $0x18, %%ax; movw %%ax, %%ss; movl %0, %%esp":: "i"(KRNL_STACK));
+
+  u32* base_upper_mem = (u32*) 0x7000;
+  u32 mem_size = (*base_upper_mem + *(base_upper_mem + 1) - 1) / 1024; //KiB
+  
+  printf("Detected RAM: %uKiB.\n", mem_size + 1);
+
   terminal_write("GDT loaded.\n");
 
   init_idt();
@@ -83,22 +92,26 @@ void kernel_main(void) {
 	terminal_write("PIC initialized.\n");
 
   // Load the Task Register (TR) with segment descriptor 0x38 (offset 56 in GDTR -> Default TSS)
-	asm("movw $0x38, %ax \n \
-			ltr %ax");
+	asm("movw $0x38, %ax; ltr %ax");
 	terminal_write("Task Register loaded.\n");
 
-  init_paging();
+  init_memory(mem_size);
   terminal_write("Paging enabled.\n");
 
+  // Kernel process
+  current = &p_list[0];
+	current->pid = 0;
+	current->state = 1;
+	current->regs.cr3 = (u32) pd0;
+
   // Load tasks to their respective physical address
-  load_task((u32*) 0x100000, (u32*) &task1, 0x2000); 
-  load_task((u32*) 0x200000, (u32*) &task2, 0x2000);
+  load_task((char*) &task1, 0x2000);
+  load_task((char*) &task2, 0x2000);
+  load_task((char*) &task3, 0x2000);
   terminal_write("Tasks loaded.\n");
 
   terminal_write("Interrupts enabled.\n");
   sti;
 
   while(1);
-
-  hlt;
 }

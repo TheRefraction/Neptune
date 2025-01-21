@@ -4,6 +4,7 @@
 // Configuration des ports E/S séries COM1, COM2, COM3 et COM4
 
 #define COM1_BASE 0x3F8 // Les adresses des autres ports sont décalées de 2, 3, 4 et 5
+
 #define DATA_PORT(base) (base)
 #define FIFO_CMD_PORT(base) (base + 2)
 #define LINE_CMD_PORT(base) (base + 3)

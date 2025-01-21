@@ -17,7 +17,7 @@ krnl:
 	make -C kernel
 
 floppy: bootloader krnl
-	cat boot/bootloader.bin kernel/kernel.bin /dev/zero | dd of=disk.img bs=512 count=2880
+	cat boot/bootloader.bin kernel/krnl32.bin /dev/zero | dd iflag=fullblock of=disk.img bs=512 count=2880
 
 run: floppy
 	make -C bochs
