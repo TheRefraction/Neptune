@@ -48,17 +48,43 @@ Versions can be changed through the Makefile. Recommended versions are:
 
 ### Bootloader <a name="bootloader"></a>
 
-The bootloader can be built using the ```make bootloader```. The Makefile outputs a binary file ```bootloader.bin``` which is then copied onto the first sectors of the medium.
+The bootloader can be built using the ```make bootloader``` command. The Makefile outputs a binary file ```bootloader.bin``` which is then copied onto the first sectors of the medium.
 <br>
 N/OS bootloader is said to be a 2-stage bootloader. At that point the computer is working in *Real Mode*. The first part ```boot.bin``` weighs 512 bytes (a sector) and initializes segments to 0x07C0. Its sector is marked as bootable in the BIOS using the magic word 0x55AA (*end of sector*). It then loads the larger part of the bootloader (*stage 2, 2 sectors*) onto address 0x1000 (logical address: 10 * 0x100 (*base/selector*) + 0x0 (*offset*)) and jumps to it.
 <br>
-Afterwards ```loader.bin``` proceeds to reset segments, to enable the A20 Line (*allows to load bigger files in memory*), to switch to *Protected Mode* and to load and jump onto the Kernel (*15 sectors loaded at 0x2000*).
+Afterwards ```loader.bin``` proceeds to reset segments, to enable the A20 Line (*allows to load bigger files in memory*), to query some information and store them at 0x7000 (*such as total memory usable*), to switch to *Protected Mode* and to load and jump onto the Kernel (*25 sectors loaded at 0x100000*).
 
 ---
 
 ### Kernel <a name="kernel"></a>
 
-TODO
+The kernel can be built using the ```make krnl``` command. The Makefile outputs a binary file ```krnl32.bin```.
+<br>
+N/OS kernel initializes some structures such as the GDT, the IDT and the TSS. It then initializes paging and memory management (*heaps and stacks*). Once everything is done, it loads some tasks and enable interrupts.
+<br>
+The kernel is assumed to take 8MiB in memory (*which is identity-mapped onto the two first pages (4MiB) of the pages directory*).
+
+0x000000-0x0007FF : GDT
+0x000800-0x000FFF : IDT
+0x001000-0x001FFF : Pages directory
+0x002000-0x09FFF0 : Kernel stack
+0x0A0000-0x0FFFFF : Hardware (*e.g Video memory at 0xB0000*)
+0x100000-0x3FFFFF : Kernel code
+0x400000-0x7FFFFF : Pages tables (4MiB)
+<br>
+
+Virtual memory is organized as such:
+
+KERNEL SPACE:
+0-8 MiB: Kernel (identity-mapped)
+8-16 MiB: Heap pages (limit at 0x01000000)
+16-256 MiB: Free
+256 MiB - 1GiB: Heap
+
+USER SPACE (starts at 0x40000000):
+???: User code
+0xE0000000: User stack (limit)
+0xFFFFFFFF: End of memory! (4GiB)
 
 ---
 
