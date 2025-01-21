@@ -1,10 +1,11 @@
 #include "types.h"
+#include "lib.h"
 #include "io.h"
-#include "lib/string.h"
 #include "idt.h"
+#include "mem.h"
 
 struct idtr kidtr;
-struct idtdesc kidt[IDTSIZE];
+struct idtdesc kidt[IDT_SIZE];
 
 void _asm_default_irq(void);
 void _asm_irq_0(void);
@@ -16,30 +17,29 @@ void _asm_ex_PF(void);
 void _asm_syscalls(void);
 
 void init_idt_desc(u16 select, u32 offset, u16 type, struct idtdesc* desc) {
-    desc->offset_low = (offset & 0xFFFF);
-    desc->select = select;
-    desc->type = type;
-    desc->offset_high = (offset & 0xFFFF0000) >> 16;
+  desc->offset_low = (offset & 0xFFFF);
+  desc->select = select;
+  desc->type = type;
+  desc->offset_high = (offset & 0xFFFF0000) >> 16;
 }
 
 void init_idt(void) {
-    int i;
-    for (i = 0; i < IDTSIZE; i++) {
-        init_idt_desc(0x08, (u32) _asm_default_irq, INTGATE, &kidt[i]);
-    }
+  for (int i = 0; i < IDT_SIZE; i++) {
+    init_idt_desc(0x08, (u32) _asm_default_irq, INT_GATE, &kidt[i]);
+  }
 
-    init_idt_desc(0x08, (u32) _asm_ex_GP, INTGATE, &kidt[13]); // General Protection Fault
-    init_idt_desc(0x08, (u32) _asm_ex_PF, INTGATE, &kidt[14]); // Page Fault
+  init_idt_desc(0x08,   (u32) _asm_ex_GP,     INT_GATE,     &kidt[13]); // General Protection Fault
+  init_idt_desc(0x08,   (u32) _asm_ex_PF,     INT_GATE,     &kidt[14]); // Page Fault
 
-    init_idt_desc(0x08, (u32) _asm_irq_0, INTGATE, &kidt[32]); // Clock INT
-    init_idt_desc(0x08, (u32) _asm_irq_1, INTGATE, &kidt[33]); // Keyboard INT
-			
-    init_idt_desc(0x08, (u32) _asm_syscalls, TRAPGATE, &kidt[48]); // System calls (0x30)
+  init_idt_desc(0x08,   (u32) _asm_irq_0,     INT_GATE,     &kidt[32]); // Clock INT
+  init_idt_desc(0x08,   (u32) _asm_irq_1,     INT_GATE,     &kidt[33]); // Keyboard INT
+	
+  init_idt_desc(0x08,   (u32) _asm_syscalls,  TRAP_GATE,    &kidt[48]); // System calls (0x30)
 
-    kidtr.limit = IDTSIZE * 8;
-    kidtr.base = IDTBASE;
+  kidtr.limit = 8 * IDT_SIZE;
+  kidtr.base = IDT_BASE;
 
-    memcpy((char*) kidtr.base, (char*) kidt, kidtr.limit);
+  memcpy((char*) kidtr.base, (char*) kidt, kidtr.limit);
 
-    asm("lidtl (kidtr)");
+  asm("lidtl (kidtr)");
 }

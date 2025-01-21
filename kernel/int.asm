@@ -1,19 +1,19 @@
 extern isr_default, isr_GP_ex, isr_PF_ex, isr_clock, isr_keyboard, do_syscalls
 global _asm_default_irq, _asm_ex_GP, _asm_ex_PF, _asm_irq_0, _asm_irq_1, _asm_syscalls
 
-%macro	SAVE_REGS 0
-	pushad 
+%macro SAVE_REGS 0
+	pushad
 	push ds
 	push es
 	push fs
-	push gs 
+	push gs
 	push ebx
 	mov bx, 0x10
 	mov ds, bx
 	pop ebx
 %endmacro
 
-%macro	RESTORE_REGS 0
+%macro RESTORE_REGS 0
 	pop gs
 	pop fs
 	pop es
@@ -22,47 +22,48 @@ global _asm_default_irq, _asm_ex_GP, _asm_ex_PF, _asm_irq_0, _asm_irq_1, _asm_sy
 %endmacro
 
 _asm_default_irq:
-    SAVE_REGS
-    call isr_default
-    mov al, 0x20
-    out 0x20, al
-    RESTORE_REGS
-    iret
-
-_asm_syscalls:
-    SAVE_REGS
-    push eax
-    call do_syscalls
-    pop eax
-    RESTORE_REGS
-    iret
+  SAVE_REGS
+  call isr_default
+  mov al, 0x20
+  out 0x20, al
+  RESTORE_REGS
+  iret
 
 _asm_ex_GP:
-    SAVE_REGS
-    call isr_GP_ex
-    RESTORE_REGS
-    add esp, 4
-    iret
+  SAVE_REGS
+  call isr_GP_ex
+  RESTORE_REGS
+  add esp, 4
+  iret
 
 _asm_ex_PF:
-    SAVE_REGS
-    call isr_PF_ex
-    RESTORE_REGS
-    add esp, 4
-    iret
+  SAVE_REGS
+  call isr_PF_ex
+  RESTORE_REGS
+  add esp, 4
+  iret
 
 _asm_irq_0:
-    SAVE_REGS
-    call isr_clock
-    mov al, 0x20
-    out 0x20, al
-    RESTORE_REGS
-    iret
+  SAVE_REGS
+  call isr_clock
+  mov al, 0x20
+  out 0x20, al
+  RESTORE_REGS
+  iret
 
 _asm_irq_1:
-    SAVE_REGS
-    call isr_keyboard
-    mov al, 0x20
-    out 0x20, al
-    RESTORE_REGS
-    iret
+  SAVE_REGS
+  call isr_keyboard
+  mov al, 0x20
+  out 0x20, al
+  RESTORE_REGS
+  iret
+
+_asm_syscalls:
+  SAVE_REGS
+  push eax
+  call do_syscalls
+  pop eax
+  RESTORE_REGS
+  iret
+

@@ -16,9 +16,9 @@ do_switch:
   push dword [esi+32] ; edi
 
   push dword [esi+48] ; ds
-  push dword [esi+50] ; es 
-  push dword [esi+52] ; fs 
-  push dword [esi+54] ; gs 
+  push dword [esi+50] ; es
+  push dword [esi+52] ; fs
+  push dword [esi+54] ; gs
 
   ; Remove mask from PIC
   mov al, 0x20
@@ -29,20 +29,20 @@ do_switch:
   mov cr3, eax
 
   ; Load registers
-  pop gs 
-  pop fs 
-  pop es 
-  pop ds 
+  pop gs
+  pop fs
+  pop es
+  pop ds
 
-  pop edi 
-  pop esi 
-  pop ebp 
+  pop edi
+  pop esi
+  pop ebp
 
-  pop ebx 
-  pop edx 
-  pop ecx 
-  pop eax 
+  pop ebx
+  pop edx
+  pop ecx
+  pop eax
 
-  ; Switch task 
+  ; Switch task
   iret
 

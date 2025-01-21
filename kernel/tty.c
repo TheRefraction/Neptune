@@ -3,16 +3,6 @@
 
 #include "tty.h"
 
-// macro for code lisibility
-#define SCREEN_CTRL 0x3D4
-#define SCREEN_DATA 0x3D5
-
-// TODO: Move these variables inside tty.h
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
-#define VGA_MEMORY 0xB8000
-#define VGA_MEMORY_LIMIT 0xB8FA0
-
 static u32 terminal_row;
 static u32 terminal_col;
 static u8 terminal_color;
@@ -103,9 +93,13 @@ void terminal_putchar(char c) {
 			terminal_row++;
 			break;
 		}
+    case 9: {
+      terminal_col += 8 - (terminal_col % 8);
+      break;
+    }
 		case 13: {
 			terminal_col = 0;
-	       		break;		
+	    break;
 		}
 		default: {
 			terminal_putentryat(c, terminal_color, terminal_col, terminal_row);
@@ -132,7 +126,7 @@ void terminal_putchar(char c) {
 	update_cursor(terminal_col, terminal_row);
 }
 
-void terminal_write(const char* data) {
+void terminal_write(char* data) {
 	u32 i = 0;
 	
 	while (data[i] != '\0') {

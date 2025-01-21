@@ -1,61 +1,106 @@
-#include "lib/string.h"
-#include "paging.h"
-#include "tty.h"
+#include "types.h"
+#include "io.h"
+#include "lib.h"
+#include "mem.h"
+#include "malloc.h"
 
 #define __KERNEL_PROCESS__
 #include "process.h"
 
-void load_task(u32* code_phys_addr, u32* fn, u32 code_size) {
-  u32 page_base, pages, kstack_base;
+int load_task(char *fn, u32 code_size) {
+  struct page_directory *pd;
+  struct page_list *pglist;
+  struct page *kstack;
 
-  memcpy((char*) code_phys_addr, (char*) fn, code_size);
+  char *v_addr;
+  char *p_addr;
+  char *ustack;
 
-  // Update Page Bitmap
-  page_base = (u32) PAGE(code_phys_addr);
-  pages = code_size / PAGE_SIZE;
+  char *old_cr3;
 
-  if (code_size % PAGE_SIZE) {
-    pages++; 
-  }
-
+  int pid;
   int i;
-  for (i = 0; i < pages; i++) {
-    set_page_frame_used(page_base + i);
+
+  // FIXME: Reuse free slots 
+  pid = 1;
+  while (p_list[pid].state != 0 && pid++ < MAX_PROCESS);
+
+  if (p_list[pid].state != 0) {
+    printf("ERROR: load_task(): Not enough slots for new process!\n");
+    return 0;
   }
 
-  // Virtual addressing space creation
-  u32* pd = pd_create(code_phys_addr, code_size);
+  pd = pd_create();
 
-  kstack_base = (u32) get_page_frame();
-  if (kstack_base > 0x400000) {
-    terminal_write("Error! Not enough memory for kernel stack!\n");
-    return;
+  asm("mov %0, %%eax; mov %%eax, %%cr3"::"m"(pd->base->p_addr));
+
+  pglist = (struct page_list *) malloc(sizeof(struct page_list));
+  pglist->page = 0;
+  pglist->next = 0;
+  pglist->prev = 0;
+
+  i = 0;
+  while (i < code_size) {
+    p_addr = get_page_frame();
+    v_addr = (char *) (USER_OFFSET + i);
+    
+    pd_add_page(v_addr, p_addr, PAGE_USER, pd);
+
+    pglist->page = (struct page *) malloc(sizeof(struct page));
+    pglist->page->p_addr = p_addr;
+    pglist->page->v_addr = v_addr;
+
+    pglist->next = (struct page_list *) malloc(sizeof(struct page_list));
+    pglist->next->page = 0;
+    pglist->next->next = 0;
+    pglist->next->prev = pglist;
+
+    pglist = pglist->next;
+
+    i += PAGE_SIZE;
   }
 
-  // Registers initialization for current task
-  p_list[n_proc].pid = n_proc;
-  p_list[n_proc].regs.ss = 0x33;
-  p_list[n_proc].regs.esp = 0x40001000;
-  p_list[n_proc].regs.eflags = 0x0;
-  p_list[n_proc].regs.cs = 0x23;
-  p_list[n_proc].regs.eip = 0x40000000;
-  p_list[n_proc].regs.ds = 0x2B;
-  p_list[n_proc].regs.es = 0x2B;
-  p_list[n_proc].regs.fs = 0x2B;
-  p_list[n_proc].regs.gs = 0x2B;
-  p_list[n_proc].regs.cr3 = (u32) pd;
+  memcpy((char *) USER_OFFSET, fn, code_size);
 
-  p_list[n_proc].kstack.ss0 = 0x18; // Offset in GDT
-  p_list[n_proc].kstack.esp0 = kstack_base + PAGE_SIZE;
+  ustack = get_page_frame();
+  pd_add_page((char *) USER_STACK, ustack, PAGE_USER, pd);
 
-  p_list[n_proc].regs.eax = 0x0;
-  p_list[n_proc].regs.ecx = 0x0;
-  p_list[n_proc].regs.edx = 0x0;
-  p_list[n_proc].regs.ebx = 0x0;
-
-  p_list[n_proc].regs.ebp = 0x0;
-  p_list[n_proc].regs.esi = 0x0;
-  p_list[n_proc].regs.edi = 0x0;
+  kstack = get_page_from_heap();
 
   n_proc++;
+
+  p_list[pid].pid = pid;
+
+  p_list[pid].regs.ss     = 0x33;
+  p_list[pid].regs.esp    = USER_STACK + PAGE_SIZE - 16;
+  p_list[pid].regs.eflags = 0x0;
+  p_list[pid].regs.cs     = 0x23; // Offset in GDT + ring 3 
+  p_list[pid].regs.eip    = 0x40000000;
+  p_list[pid].regs.ds     = 0x2B; // Offset in GDT + ring 3 
+  p_list[pid].regs.es     = 0x2B;
+  p_list[pid].regs.fs     = 0x2B;
+  p_list[pid].regs.gs     = 0x2B;
+
+  p_list[pid].regs.cr3    = (u32) pd->base->p_addr;
+
+  p_list[pid].kstack.ss0  = 0x18; // Offset in GDT
+  p_list[pid].kstack.esp0 = (u32) kstack->v_addr + PAGE_SIZE - 16;
+
+  p_list[pid].regs.eax    = 0;
+  p_list[pid].regs.ecx    = 0;
+  p_list[pid].regs.edx    = 0;
+  p_list[pid].regs.ebx    = 0;
+
+  p_list[pid].regs.ebp    = 0;
+  p_list[pid].regs.esi    = 0;
+  p_list[pid].regs.edi    = 0;
+
+  p_list[pid].pd          = pd;
+  p_list[pid].pglist      = pglist;
+
+  p_list[pid].state       = 1; // Loaded
+
+  asm("mov %0, %%eax; mov %%eax, %%cr3"::"m"(current->regs.cr3));
+
+  return pid;
 }
