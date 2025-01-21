@@ -1,12 +1,11 @@
-#include "types.h"
+#include "io.h"
 #include "lib.h"
 #include "mem.h"
 #include "malloc.h"
 
-void *sbrk(int n) {
+void *sbrk(u32 n) {
   struct malloc_header *chunk;
   char *p_addr;
-  int i;
 
   if ((krnl_heap + (n * PAGE_SIZE)) > (char*) KRNL_HEAP_LIM) {
     printf("ERROR: sbrk(): no virtual memory left for kernel heap!\n");
@@ -15,7 +14,7 @@ void *sbrk(int n) {
 
   chunk = (struct malloc_header *) krnl_heap;
 
-  for (i = 0; i < n; i++) {
+  for (u32 i = 0; i < n; i++) {
     p_addr = get_page_frame();
     if (p_addr < 0) {
       printf("ERROR: sbrk(): no free page frame available!\n");
@@ -33,11 +32,11 @@ void *sbrk(int n) {
   return chunk;
 }
 
-void *malloc(unsigned long size) {
-  unsigned long realsize;
+void *malloc(u32 size) {
   struct malloc_header *chunk, *other;
 
-  if ((realsize = sizeof(struct malloc_header) + size) < MALLOC_MINSIZE) {
+  u32 realsize = sizeof(struct malloc_header) + size;
+  if (realsize < MALLOC_MINSIZE) {
     realsize = MALLOC_MINSIZE;
   }
 
@@ -45,7 +44,7 @@ void *malloc(unsigned long size) {
   while (chunk->used || chunk->size < realsize) {
     if (chunk->size == 0) {
       printf("PANIC: malloc(): corrupted chunk on %x with null size (heap %x)!\n", chunk, krnl_heap);
-      asm("hlt");
+      hlt;
     }
 
     chunk = (struct malloc_header *) ((char *) chunk + chunk->size);
@@ -53,11 +52,11 @@ void *malloc(unsigned long size) {
     if (chunk == (struct malloc_header *) krnl_heap) {
       if (sbrk((realsize / PAGE_SIZE) + 1) < 0) {
         printf("PANIC: malloc(): no memory left for kernel!\n");
-        asm("hlt");
+        hlt;
       }
     } else if (chunk > (struct malloc_header *) krnl_heap) {
       printf("PANIC: malloc(): chunk on %x while heap limit on %x!\n", chunk, krnl_heap);
-      asm("hlt");
+      hlt;
     }
   }
 

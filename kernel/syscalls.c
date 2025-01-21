@@ -2,10 +2,10 @@
 #include "lib.h"
 #include "io.h"
 
-void do_syscalls(int id) {
+void do_syscalls(u32 id) {
   char* str;
   u32 *pa;
-  int i;
+  u32 i;
 
   switch(id) {
     case 1: { // Display text

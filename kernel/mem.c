@@ -9,14 +9,11 @@
 #include "malloc.h"
 
 char* get_page_frame(void) {
-  int byte, bit;
-  int page = -1;
-
-  for (byte = 0; byte < RAM_MAXPAGE / 8; byte++) {
+  for (u32 byte = 0; byte < RAM_MAXPAGE / 8; byte++) {
     if (mem_bitmap[byte] != 0xFF) {
-      for (bit = 0; bit < 8; bit++) {
+      for (u8 bit = 0; bit < 8; bit++) {
         if (!(mem_bitmap[byte] & (1 << bit))) {
-          page = 8 * byte + bit;
+          u32 page = 8 * byte + bit;
           // Set the found page to reserved/used
           set_page_frame_used(page);
           return (char *) (page * PAGE_SIZE);
@@ -123,8 +120,8 @@ int release_page_from_heap(char *v_addr) {
 }
 
 void init_memory(u32 high_mem) { 
-  int pg, pg_limit;
-  unsigned long i;
+  u32 pg, pg_limit;
+  u16 i;
 
   // Total number of pages in memory
   pg_limit = (high_mem * 1024) / PAGE_SIZE;
@@ -138,16 +135,23 @@ void init_memory(u32 high_mem) {
     mem_bitmap[pg] = 0xFF;
   }
 
+  // 2 pages for kernel 8Mio => Identity mapping
   for (pg = PAGE(0x0); pg < PAGE((u32) pg1_end); pg++) {
     set_page_frame_used(pg);
   }
 
-  pd0[0] = (u32) pg0 | (PAGE_PRESENT | PAGE_WRITE | PAGE_4MB);
-  pd0[1] = (u32) pg1 | (PAGE_PRESENT | PAGE_WRITE | PAGE_4MB);
+  pd0[0] = (u32) pg0;
+  pd0[0] |= (PAGE_PRESENT | PAGE_WRITE | PAGE_4MB);
+
+  pd0[1] = (u32) pg1;
+  pd0[1] |= (PAGE_PRESENT | PAGE_WRITE | PAGE_4MB);
+
   for (i = 2; i < 1023; i++) {
-    pd0[i] = ((u32) pg1 + i * PAGE_SIZE) | (PAGE_PRESENT | PAGE_WRITE);
+    pd0[i] = ((u32) pg1 + i * PAGE_SIZE);
+    pd0[i] |= (PAGE_PRESENT | PAGE_WRITE);
   }
-  pd0[1023] = ((u32) pd0 | (PAGE_PRESENT | PAGE_WRITE));
+  pd0[1023] = (u32) pd0;
+  pd0[1023] |= (PAGE_PRESENT | PAGE_WRITE);
 
   /*
    * Passage de l'adresse du répertoire de pages au registre CR3
@@ -162,7 +166,7 @@ void init_memory(u32 high_mem) {
 	  or %1, %%eax; \
 	  mov %%eax, %%cr0" :: "m"(pd0), "i"(PAGING_FLAG), "i"(PSE_FLAG));
 
-  // Initialize kernel heap 
+  // Initialize kernel heap with at least 1 block
   krnl_heap = (char*) KRNL_HEAP;
   sbrk(1);
 
@@ -179,7 +183,7 @@ void init_memory(u32 high_mem) {
 struct page_directory *pd_create(void) {
   struct page_directory *pd;
   u32 *pdir;
-  int i;
+  u16 i;
 
   pd = (struct page_directory *) malloc(sizeof(struct page_directory));
   pd->base = get_page_from_heap();
@@ -195,7 +199,8 @@ struct page_directory *pd_create(void) {
     pdir[i] = 0;
   }
 
-  pdir[1023] = ((u32) pd->base->p_addr | (PAGE_PRESENT | PAGE_WRITE));
+  pdir[1023] = (u32) pd->base->p_addr;
+  pdir[1023] |= (PAGE_PRESENT | PAGE_WRITE);
 
   pd->pt = 0; 
 
@@ -225,8 +230,7 @@ int pd_destroy(struct page_directory *pd) {
 }
 
 int pd0_add_page(char *v_addr, char *p_addr, int flags) {
-  u32 *pde;
-  u32 *pte;
+  u32 *pde, *pte;
 
   if (v_addr > (char *) USER_OFFSET) {
     printf("ERROR : pd0_add_page(): %p not in kernel space!\n", v_addr);
@@ -242,18 +246,16 @@ int pd0_add_page(char *v_addr, char *p_addr, int flags) {
 
   //Add page in table 
   pte = (u32 *) (0xFFC00000 | (((u32) v_addr & 0xFFFFF000) >> 10));
-  *pte = ((u32) p_addr) | (PAGE_PRESENT | PAGE_WRITE | flags);
+  *pte = (u32) p_addr;
+  *pte |= (PAGE_PRESENT | PAGE_WRITE | flags);
 
   return 0;
 }
 
 int pd_add_page(char *v_addr, char *p_addr, int flags, struct page_directory *pd) {
-  u32 *pde;
-  u32 *pte;
-  u32 *pt;
+  u32 *pde, *pte, *pt;
   struct page *newpg;
   struct page_list *pglist;
-  int i;
 
   pde = (u32 *) (0xFFFFF000 | (((u32) v_addr & 0xFFC00000) >> 20));
 
@@ -262,7 +264,7 @@ int pd_add_page(char *v_addr, char *p_addr, int flags, struct page_directory *pd
     newpg = get_page_from_heap();
 
     pt = (u32 *) newpg->v_addr;
-    for (i = 1; i < 1024; i++) {
+    for (u16 i = 1; i < 1024; i++) {
       pt[i] = 0;
     }
 
@@ -287,7 +289,8 @@ int pd_add_page(char *v_addr, char *p_addr, int flags, struct page_directory *pd
   }
 
   pte = (u32 *) (0xFFC00000 | (((u32) v_addr & 0xFFFFF000) >> 10));
-  *pte = ((u32) p_addr) | (PAGE_PRESENT | PAGE_WRITE | flags);
+  *pte = (u32) p_addr;
+  *pte |= (PAGE_PRESENT | PAGE_WRITE | flags);
 
   return 0;
 }
@@ -305,8 +308,7 @@ int pd_remove_page(char *v_addr) {
 }
 
 char *get_p_addr(char *v_addr) {
-  u32 *pde;
-  u32 *pte;
+  u32 *pde, *pte;
 
   pde = (u32 *) (0xFFFFF000 | (((u32) v_addr & 0xFFC00000) >> 20));
   if ((*pde & PAGE_PRESENT)) {

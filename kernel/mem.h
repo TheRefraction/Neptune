@@ -8,7 +8,7 @@
 #define PAGE_USER         0x00000004
 #define PAGE_4MB          0x00000080
 
-#define PAGE_SIZE         4096         // Taille d'une page (4 Kio)
+#define PAGE_SIZE         0x1000       // Taille d'une page (4 Kio)
 #define RAM_MAXSIZE       0x100000000  // 4Gio
 #define RAM_MAXPAGE       0x100000
 

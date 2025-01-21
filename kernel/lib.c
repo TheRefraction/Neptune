@@ -1,28 +1,22 @@
 #include <stdarg.h>
 #include "tty.h"
 
-/* La fonction memcpy permet de copier n octets de src vers dest.
- * Les adresses sont lineaires.
- */
-void *memcpy(char *dst, char *src, int n)
-{
+void *memcpy(char *dst, char *src, u32 n) {
 	char *p = dst;
 	while (n--)
 		*dst++ = *src++;
 	return p;
 }
 
-int strcpy(char *dst, char *src)
-{
-	int i = 0;
+u32 strcpy(char *dst, char *src) {
+	u32 i = 0;
 	while ((dst[i] = src[i++]));
 
 	return i;
 }
 
-int strcmp(char *dst, char *src)
-{
-	int i = 0;
+u8 strcmp(char *dst, char *src) {
+	u32 i = 0;
 
 	while ((dst[i] == src[i])) {
 		if (src[i++] == 0)
@@ -32,32 +26,30 @@ int strcmp(char *dst, char *src)
 	return 1;
 }
 
-int strlen(char *s)
-{
-	int i = 0;
-	while (*s++)
+u32 strlen(char *s){
+	u32 i = 0;
+	while (*s++) {
 		i++;
+	}
+
 	return i;
 }
 
-void itoa(char *buf, unsigned long int n, int base)
-{
-	unsigned long int tmp;
-	int i, j;
-
-	tmp = n;
-	i = 0;
+void itoa(char *buffer, u32 n, u8 base) {
+	u32 tmp = n;
+	u32 i = 0;
 
 	do {
 		tmp = n % base;
-		buf[i++] = (tmp < 10) ? (tmp + '0') : (tmp + 'a' - 10);
+		buffer[i++] = (tmp < 10) ? (tmp + '0') : (tmp + 'a' - 10);
 	} while (n /= base);
-	buf[i--] = 0;
 
-	for (j = 0; j < i; j++, i--) {
-		tmp = buf[j];
-		buf[j] = buf[i];
-		buf[i] = tmp;
+	buffer[i--] = 0;
+
+	for (u32 j = 0; j < i; j++, i--) {
+		tmp = buffer[j];
+		buffer[j] = buffer[i];
+		buffer[i] = tmp;
 	}
 }
 

@@ -1,8 +1,6 @@
 #include "types.h"
 #include "gdt.h"
 #include "process.h"
-#include "lib.h"
-#include "mem.h"
 
 void switch_to_task(int n, int mode) {
   u32 kesp, eflags;
@@ -49,7 +47,7 @@ void switch_to_task(int n, int mode) {
 void schedule(void) {
   struct process *p;
   u32 *stack_ptr;
-  int i, newpid;
+  u32 i, newpid;
 
   asm("mov (%%ebp), %%eax; mov %%eax, %0":"=m"(stack_ptr):);
 

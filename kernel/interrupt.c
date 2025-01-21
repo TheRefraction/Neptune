@@ -3,7 +3,6 @@
 #include "io.h"
 #include "keyboard.h"
 #include "lib.h"
-#include "process.h"
 #include "schedule.h"
 
 void isr_default(void) {
@@ -24,7 +23,7 @@ void isr_PF_ex(void) {
 	  mov %%cr2, %%eax; \
 	  mov %%eax, %1" : "=m"(eip), "=m"(addr) : );
 
-  printf("EX0x0E - Page Fault!\nEIP: %p\nCR2: %p", eip, addr);
+  printf("EX0x0E - Page Fault!\neip: %p\ncr2: %p", eip, addr);
   hlt;
 }
 

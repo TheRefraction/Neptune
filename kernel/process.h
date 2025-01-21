@@ -25,17 +25,17 @@ struct process {
 
   struct page_list *pglist;
 
-  int state; // 0 unused, 1 ready/running, 2 sleep
+  u8 state; // 0 unused, 1 ready/running, 2 sleep
 } __attribute__ ((packed));
 
 #ifdef __KERNEL_PROCESS__
   struct process p_list[MAX_PROCESS + 1];
   struct process *current = 0;
-  int n_proc = 0;
+  u32 n_proc = 0;
 #else
   extern struct process p_list[];
   extern struct process *current;
-  extern int n_proc;
+  extern u32 n_proc;
 #endif
 
 int load_task(char *, u32);

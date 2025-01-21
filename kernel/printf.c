@@ -1,19 +1,16 @@
 #include <stdarg.h>
 
+#include "types.h"
 #include "tty.h"
 #include "lib.h"
 
 void printf(char *s, ...) {
   va_list ap;
 
-  char buf[16];
-  unsigned int size, buflen;
-  unsigned char neg;
+  char buffer[16];
+  u32 size, buflen, uival;
   int i, j;
-
-  unsigned char c;
-  int ival;
-  unsigned int uival;
+  u8 c, neg;
 
   va_start(ap, s);
 
@@ -32,7 +29,7 @@ void printf(char *s, ...) {
 
       switch(c) {
         case 'd': {
-          ival = va_arg(ap, int);
+          int ival = va_arg(ap, int);
           if (ival < 0) {
             uival = 0 - ival;
             neg++;
@@ -40,66 +37,66 @@ void printf(char *s, ...) {
             uival = ival;
           }
 
-          itoa(buf, uival, 10);
-          buflen = strlen(buf);
+          itoa(buffer, uival, 10);
+          buflen = strlen(buffer);
 
           if (buflen < size) {
             for (i = size, j = buflen; i >= 0; i--, j--) {
-              buf[i] = (j >= 0) ? buf[j] : '0';
+              buffer[i] = (j >= 0) ? buffer[j] : '0';
             }
           }
 
           if (neg) {
-            printf("-%s", buf);
+            printf("-%s", buffer);
           } else {
-            printf(buf);
+            printf(buffer);
           }
           break;
         }
         case 'u': {
           uival = va_arg(ap, int);
           
-          itoa(buf, uival, 10);
-          buflen = strlen(buf);
+          itoa(buffer, uival, 10);
+          buflen = strlen(buffer);
 
           if (buflen < size) {
             for (i = size, j = buflen; i >= 0; i--, j--) {
-              buf[i] = (j >= 0) ? buf[j] : '0';
+              buffer[i] = (j >= 0) ? buffer[j] : '0';
             } 
           }
 
-          printf(buf);
+          printf(buffer);
           break;
         }
         case 'x': {
           uival = va_arg(ap, int);
           
-          itoa(buf, uival, 16);
-          buflen = strlen(buf);
+          itoa(buffer, uival, 16);
+          buflen = strlen(buffer);
 
           if (buflen < size) {
             for (i = size, j = buflen; i >= 0; i--, j--) {
-              buf[i] = (j >= 0) ? buf[j] : '0';
+              buffer[i] = (j >= 0) ? buffer[j] : '0';
             } 
           }
 
-          printf("0x%s", buf);
+          printf("0x%s", buffer);
           break;
         }
         case 'p': {
           uival = va_arg(ap, int);
           size = 8;
           
-          itoa(buf, uival, 16);
-          buflen = strlen(buf);
+          itoa(buffer, uival, 16);
+          buflen = strlen(buffer);
 
           if (buflen < size) {
             for (i = size, j = buflen; i >= 0; i--, j--) {
-              buf[i] = (j >= 0) ? buf[j] : '0';
+              buffer[i] = (j >= 0) ? buffer[j] : '0';
             } 
           }
 
-          printf("0x%s", buf);
+          printf("0x%s", buffer);
           break;
         }
         case 's': {

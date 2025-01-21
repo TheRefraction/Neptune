@@ -18,7 +18,7 @@ void kernel_start(void) {
 
 void task1(void) {
   char *msg = (char*) 0x40001000;
-  unsigned int i;
+  u32 i;
 
   msg[0] = 'T';
   msg[1] = 'a';
@@ -31,7 +31,7 @@ void task1(void) {
   while(1) {
     // Call syscall n°1 (eax) and prints the string loaded in ebx
     asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-    for (i = 0; i < 1000000; i++);
+    for (i = 0; i < 10000000; i++);
   }
 
   return;
@@ -39,7 +39,7 @@ void task1(void) {
 
 void task2(void) {
   char *msg = (char*) 0x40001000;
-  unsigned int i;
+  u32 i;
 
   msg[0] = 'T';
   msg[1] = 'a';
@@ -52,7 +52,19 @@ void task2(void) {
   while(1) {
     // Call syscall n°1 (eax) and prints the string loaded in ebx
     asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-    for (i = 0; i < 1000000; i++);
+    for (i = 0; i < 10000000; i++);
+  }
+
+  return;
+}
+
+void task3(void) {
+  u32 i;
+
+  while(1) {
+    // Call syscall n°1 (eax) and prints the string loaded in ebx
+    asm("mov $0x02, %eax; int $0x30");
+    for (i = 0; i < 10000000; i++);
   }
 
   return;
@@ -86,9 +98,16 @@ void kernel_main(void) {
   init_memory(mem_size);
   terminal_write("Paging enabled.\n");
 
+  // Kernel process
+  current = &p_list[0];
+	current->pid = 0;
+	current->state = 1;
+	current->regs.cr3 = (u32) pd0;
+
   // Load tasks to their respective physical address
   load_task((char*) &task1, 0x2000);
   load_task((char*) &task2, 0x2000);
+  load_task((char*) &task3, 0x2000);
   terminal_write("Tasks loaded.\n");
 
   terminal_write("Interrupts enabled.\n");

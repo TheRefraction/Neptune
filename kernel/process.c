@@ -12,14 +12,9 @@ int load_task(char *fn, u32 code_size) {
   struct page_list *pglist;
   struct page *kstack;
 
-  char *v_addr;
-  char *p_addr;
-  char *ustack;
+  char *v_addr, *p_addr, *ustack;
 
-  char *old_cr3;
-
-  int pid;
-  int i;
+  u32 pid, i;
 
   // FIXME: Reuse free slots 
   pid = 1;

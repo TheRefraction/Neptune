@@ -1,13 +1,13 @@
-#define MALLOC_MINSIZE    16
-
 #include "types.h"
 
+#define MALLOC_MINSIZE    16
+
 struct malloc_header {
-  unsigned long size:31;
-  unsigned long used:1;
+  u32 size:31;
+  u32 used:1;
 } __attribute__((packed));
 
-void *sbrk(int);
-void *malloc(unsigned long);
+void *sbrk(u32);
+void *malloc(u32);
 void free(void *);
 

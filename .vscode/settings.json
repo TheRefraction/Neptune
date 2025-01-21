@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "string.h": "c",
-        "tty.h": "c"
+        "tty.h": "c",
+        "idt.h": "c",
+        "mem.h": "c"
     }
 }

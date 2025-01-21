@@ -1,3 +1,4 @@
+#include "types.h"
 /* descripteur gdt standard (8 octets)
  * limite basse 16 bits
  * base basse 16 bits

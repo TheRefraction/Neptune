@@ -1,4 +1,4 @@
-#include "mem.h"
+#include "types.h"
 
 #define INT_GATE    0x8E00
 #define TRAP_GATE   0xEF00
@@ -16,7 +16,14 @@ struct idtr {
   u32 base;
 } __attribute__ ((packed));
 
+#ifdef __KERNEL_IDT__
+  struct idtdesc kidt[IDT_SIZE];
+  struct idtr kidtr;
+#else
+  extern struct idtdesc kidt[];
+  extern struct idtr kidtr;
+#endif
+
 void init_idt_desc(u16, u32, u16, struct idtdesc*);
 void init_idt(void);
 void init_pic(void);
-
