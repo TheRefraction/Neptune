@@ -16,8 +16,16 @@ bootloader:
 krnl:
 	make -C kernel
 
-floppy: bootloader krnl
-	cat boot/bootloader.bin kernel/krnl32.bin /dev/zero | dd iflag=fullblock of=disk.img bs=512 count=2880
+floppy: bootloader
+	@if [ -f disk.img ]; then rm -f disk.img; fi
+	mkdosfs -F 12 -C disk.img 1440 -r 224 -s 1 -S 512 -n "NOS DISK   "
+	dd if=boot/BOOT.BIN of=disk.img conv=notrunc status=noxfer
+	@rm -rf tmp-loop
+	@mkdir tmp-loop 
+	mount -o loop -t vfat disk.img tmp-loop
+	@cp boot/KRNLLDR.SYS tmp-loop/
+	umount tmp-loop || exit
+	@rm -rf tmp-loop
 
 run: floppy
 	make -C bochs

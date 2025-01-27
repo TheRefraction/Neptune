@@ -1,11 +1,10 @@
 all: boot loader
-	cat boot.bin loader.bin > bootloader.bin
 
 boot: boot.asm
-	nasm -f bin $^ -o $@.bin
+	nasm -f bin $^ -o BOOT.BIN
 
 loader: loader.asm
-	nasm -f bin $^ -o $@.bin
+	nasm -f bin $^ -o KRNLLDR.SYS
 
 clean:
-	rm -f *.bin
+	rm -f *.bin *.sys *.BIN *.SYS
