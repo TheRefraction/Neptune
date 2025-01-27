@@ -37,39 +37,6 @@ void task1(void) {
   return;
 }
 
-void task2(void) {
-  char *msg = (char*) 0x40001000;
-  u32 i;
-
-  msg[0] = 'T';
-  msg[1] = 'a';
-  msg[2] = 's';
-  msg[3] = 'k';
-  msg[4] = '2';
-  msg[5] = '\n';
-  msg[6] = 0;
-
-  while(1) {
-    // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-    for (i = 0; i < 10000000; i++);
-  }
-
-  return;
-}
-
-void task3(void) {
-  u32 i;
-
-  while(1) {
-    // Call syscall n°1 (eax) and prints the string loaded in ebx
-    asm("mov $0x02, %eax; int $0x30");
-    for (i = 0; i < 10000000; i++);
-  }
-
-  return;
-}
-
 void kernel_main(void) {
   cli;
 
@@ -106,8 +73,6 @@ void kernel_main(void) {
 
   // Load tasks to their respective physical address
   load_task((char*) &task1, 0x2000);
-  load_task((char*) &task2, 0x2000);
-  load_task((char*) &task3, 0x2000);
   terminal_write("Tasks loaded.\n");
 
   terminal_write("Interrupts enabled.\n");

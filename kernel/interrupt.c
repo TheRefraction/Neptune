@@ -9,21 +9,73 @@ void isr_default(void) {
   printf("Default interrupt\n");
 }
 
+void isr_DE_ex(void) {
+  terminal_panic("EX0x00 - Division by zero!\n");
+  hlt;
+}
+
+void isr_DB_ex(void) {
+  terminal_panic("EX0x01 - Debug!\n");
+  hlt;
+}
+
+void isr_NMI_ex(void) {
+  terminal_panic("EX0x02 - Non Maskable Interrupt!\n");
+  hlt;
+}
+
+void isr_BP_ex(void) {
+  terminal_panic("EX0x03 - Breakpoint!\n");
+  hlt;
+}
+
+void isr_OF_ex(void) {
+  terminal_panic("EX0x04 - Overflow!\n");
+  hlt;
+}
+
+void isr_BR_ex(void) {
+  terminal_panic("EX0x05 - Bound Range Exceeded!\n");
+  hlt;
+}
+
+void isr_UD_ex(void) {
+  terminal_panic("EX0x06 - Invalid Opcode!\n");
+  hlt;
+}
+
+void isr_NM_ex(void) {
+  terminal_panic("EX0x07 - Device Not Available!\n");
+  hlt;
+}
+
+void isr_DF_ex(void) {
+  terminal_panic("EX0x08 - Double Fault!\n");
+  hlt;
+}
+
+void isr_TS_ex(void) {
+  terminal_panic("EX0x0A - Invalid TSS!\n");
+  hlt;
+}
+
+void isr_NP_ex(void) {
+  terminal_panic("EX0x0B - Segment Not Present!\n");
+  hlt;
+}
+
+void isr_SS_ex(void) {
+  terminal_panic("EX0x0C - Stack-Segment Fault!\n");
+  hlt;
+}
+
 void isr_GP_ex(void) {
-  printf("EX0x0D - General Protection Fault!\n");
+  terminal_panic("EX0x0D - General Protection Fault!\n");
   hlt;
 }
 
 void isr_PF_ex(void) {
-  u32 addr;
-  u32 eip;
-
-  asm("movl 60(%%ebp), %%eax; \
-	  mov %%eax, %0; \
-	  mov %%cr2, %%eax; \
-	  mov %%eax, %1" : "=m"(eip), "=m"(addr) : );
-
-  printf("EX0x0E - Page Fault!\neip: %p\ncr2: %p", eip, addr);
+  terminal_panic("EX0x0E - Page Fault!");
   hlt;
 }
 

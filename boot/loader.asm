@@ -23,13 +23,13 @@ start:
 	call enable_a20
 	jc a20_failure
 
-  call detect_upper_memory
-  mov ax, 0x100 
-  mov ds, ax 
-  mov es, ax
+	call detect_upper_memory
+	mov ax, 0x100 
+	mov ds, ax 
+	mov es, ax
 
 	call load_kernel
-  call load_gdt
+  	call load_gdt
 	call switch_to_pm
 
 	jmp $ ; Halt forever
@@ -165,9 +165,9 @@ protected_mode:
 	mov ebx, MSG_PROT_MODE
 	call print_string_pm
 
-  mov esi, 0x2000
-  mov edi, KERNEL_OFFSET
-  mov cx, 256 * KERNEL_SIZE ; Number of words to copy (2 bytes)
+	mov esi, 0x2000
+	mov edi, KERNEL_OFFSET
+	mov cx, 256 * KERNEL_SIZE ; Number of words to copy (2 bytes)
 
 copy_kernel:
   mov eax, [ds:esi]

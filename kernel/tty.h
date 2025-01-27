@@ -19,6 +19,8 @@ void terminal_movecursor(int, int);
 void terminal_scroll(u32);
 void terminal_setcolor(u8);
 void terminal_dump(u8*, u32);
+void terminal_clear(void);
+void terminal_panic(char *data);
 
 void enable_cursor(u8, u8);
 void disable_cursor(void);

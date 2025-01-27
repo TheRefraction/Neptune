@@ -9,6 +9,18 @@ void _asm_default_irq(void);
 void _asm_irq_0(void);
 void _asm_irq_1(void);
 
+void _asm_ex_DE(void);
+void _asm_ex_DB(void);
+void _asm_ex_NMI(void);
+void _asm_ex_BP(void);
+void _asm_ex_OF(void);
+void _asm_ex_BR(void);
+void _asm_ex_UD(void);
+void _asm_ex_NM(void);
+void _asm_ex_DF(void);
+void _asm_ex_TS(void);
+void _asm_ex_NP(void);
+void _asm_ex_SS(void);
 void _asm_ex_GP(void);
 void _asm_ex_PF(void);
 
@@ -26,6 +38,19 @@ void init_idt(void) {
     init_idt_desc(0x08, (u32) _asm_default_irq, INT_GATE, &kidt[i]);
   }
 
+  init_idt_desc(0x08,   (u32) _asm_ex_DE,     INT_GATE,     &kidt[0]);  // Division by zero
+  init_idt_desc(0x08,   (u32) _asm_ex_DB,     INT_GATE,     &kidt[1]);  // Debug
+  init_idt_desc(0x08,   (u32) _asm_ex_NMI,    INT_GATE,     &kidt[2]);  // Non Maskable Interrupt
+  init_idt_desc(0x08,   (u32) _asm_ex_BP,     INT_GATE,     &kidt[3]);  // Breakpoint
+  init_idt_desc(0x08,   (u32) _asm_ex_OF,     INT_GATE,     &kidt[4]);  // Overflow
+  init_idt_desc(0x08,   (u32) _asm_ex_BR,     INT_GATE,     &kidt[5]);  // Bound Range Exceeded
+  init_idt_desc(0x08,   (u32) _asm_ex_UD,     INT_GATE,     &kidt[6]);  // Invalid Opcode
+  init_idt_desc(0x08,   (u32) _asm_ex_NM,     INT_GATE,     &kidt[7]);  // Device Not Available
+  init_idt_desc(0x08,   (u32) _asm_ex_DF,     INT_GATE,     &kidt[8]);  // Double Fault
+  //init_idt_desc(0x08,   (u32) _asm_default_irq, INT_GATE,     &kidt[9]);  // Coprocessor Segment Overrun
+  init_idt_desc(0x08,   (u32) _asm_ex_TS,     INT_GATE,     &kidt[10]); // Invalid TSS
+  init_idt_desc(0x08,   (u32) _asm_ex_NP,     INT_GATE,     &kidt[11]); // Segment Not Present
+  init_idt_desc(0x08,   (u32) _asm_ex_SS,     INT_GATE,     &kidt[12]); // Stack-Segment Fault
   init_idt_desc(0x08,   (u32) _asm_ex_GP,     INT_GATE,     &kidt[13]); // General Protection Fault
   init_idt_desc(0x08,   (u32) _asm_ex_PF,     INT_GATE,     &kidt[14]); // Page Fault
 

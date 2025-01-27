@@ -1,4 +1,4 @@
 %define LOADER_BASE 0x100
 %define LOADER_SIZE 0x2
 %define KERNEL_OFFSET 0x100000
-%define KERNEL_SIZE 25
+%define KERNEL_SIZE 33
