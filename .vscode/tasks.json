@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile N/OS",
+            "type": "shell",
+            "command": "make",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run N/OS",
+            "type": "shell",
+            "command": "make run"
+        },
+        {
+            "label": "Clean N/OS",
+            "type": "shell",
+            "command": "make clean"
+        }
+    ]
+}
