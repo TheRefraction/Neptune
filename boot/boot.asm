@@ -35,9 +35,9 @@ start:
 	mov gs, ax
 
 	; Initialize stack
-	mov ax, 0x0000
+	mov ax, 0x8000
 	mov ss, ax
-	mov sp, 0xFFFF
+	mov sp, 0xF000
 	sti
 
 	mov si, MSG_REAL_MODE
@@ -64,7 +64,7 @@ print_string:
 
 read_sectors:
 .start:
-	mov di, 0x0005		; Number of retries
+	mov di, 0x5		; Number of retries
 .main:
 	push ax 
 	push bx 
@@ -114,7 +114,7 @@ lba_to_chs:
 	ret
 
 chs_to_lba:
-	sub ax, 0x0002
+	sub ax, 0x2
 	xor cx, cx
 	mov cl, byte [bpbSectorsPerCluster]
 	mul cx
@@ -125,7 +125,7 @@ load_root_directory:
 	; Get the size (number of sectors) of root directory and store it in cx
 	xor cx, cx
 	xor dx, dx
-	mov ax, 0x0020 							; 32 bytes per root entry
+	mov ax, 0x20 							; 32 bytes per root entry
 	mul word [bpbRootEntries] 				; AX = 32 * RootEntries
 	div word [bpbBytesPerSector] 			; AX = AX / BytesPerSector
 	xchg ax, cx
@@ -142,12 +142,12 @@ load_root_directory:
 	add word [dataarea], cx
 
 	; Load root directory at 7C00:0200 (i.e 0x7E00 sector after boot sector)
-	mov bx, 0x0200 
+	mov bx, 0x200 
 	call read_sectors
 
 	; Browse root directory for stage 2
 	mov cx, word [bpbRootEntries] 	; Number of entries to check
-	mov di, 0x0200 				; Address of root directory
+	mov di, 0x200 				; Address of root directory
 .next_entry:
 	push cx
 	mov cx, 11 					; Number of characters of files in FAT12/16 FS
@@ -159,7 +159,7 @@ load_root_directory:
 	je load_fat 				; If found, load FAT
 
 	pop cx
-	add di, 0x0020 				; Next entry
+	add di, 0x20 				; Next entry
 	loop .next_entry			; Decrement cx 
 
 	jmp failure
@@ -168,7 +168,7 @@ load_fat:
 	mov si, MSG_CRLF
 	call print_string
 
-	mov dx, word [di + 0x001A]		; Starting address of file entry + 26 bytes -> First cluster address
+	mov dx, word [di + 0x1A]		; Starting address of file entry + 26 bytes -> First cluster address
 	mov word [cluster], dx
 
 	; Number of sectors used by the FATs and store it in cx
@@ -185,9 +185,9 @@ load_fat:
 	; Read image file at 0050:0000
 	mov si, MSG_CRLF
 	call print_string
-	mov ax, 0x0050
+	mov ax, 0x50
 	mov es, ax 
-	mov bx , 0x0000 
+	mov bx , 0x0
 	push bx 
 
 load_image:
@@ -204,9 +204,9 @@ load_image:
 	mov ax, word [cluster]
 	mov cx, ax 
 	mov dx, ax 
-	shr dx, 0x0001 			; Divide by 2
+	shr dx, 0x1 			; Divide by 2
 	add cx, dx
-	mov bx, 0x0200 		; FAT table starts at 0x7E00
+	mov bx, 0x200 		; FAT table starts at 0x7E00
 	add bx, cx 			; Index in FAT 
 	mov dx, word [bx]	; Read 2 bytes
 	test ax, 0x0001
@@ -215,17 +215,14 @@ load_image:
 	and dx, 0x0FFF		; Take low 12 bits
 	jmp .done
 .odd:
-	shr dx, 0x0004		; Take high 12 bits
+	shr dx, 0x4		; Take high 12 bits
 .done:
 	mov word [cluster], dx
-	cmp dx, 0x0FF0		; End of file
+	cmp dx, 0xFF0		; End of file
 	jb load_image
 
-done:
 	; Jump to 0050:0000
-	push word 0x0050
-	push word 0x0000
-	retf
+	jmp dword 0x0050:0x0000
 
 failure:
 	mov si, MSG_FAILURE 
